@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusConnect - Event Reviews & Photo Gallery</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Shared Sidebar -->
+    <aside class="sidebar" id="sidebarElement"></aside>
+
+    <div class="main-wrapper">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <button class="mobile-nav-toggle" id="mobileMenuBtn" aria-label="Toggle navigation">☰</button>
+                <div class="page-headline">
+                    <h1>Reviews & Photo Recap Gallery</h1>
+                    <p>Student ratings, event testimonials, and campus photo memories</p>
+                </div>
+            </div>
+            <div class="top-bar-actions">
+                <div id="notifWidgetSlot"></div>
+                <button onclick="openReviewModal()" class="btn btn-primary btn-sm">
+                    ⭐ Write a Review
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="content-container">
+            <!-- Rating Overview Banner -->
+            <div style="background: linear-gradient(135deg, #1e3a8a, #4338ca); color: #ffffff; border-radius: var(--radius-lg); padding: 32px; margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: var(--shadow-md);">
+                <div>
+                    <span class="badge" style="background: rgba(255,255,255,0.2); color: #fff; margin-bottom: 8px;">Campus Community Voice</span>
+                    <h2 style="font-size: 1.8rem; font-weight: 800;">Real Student Event Experiences</h2>
+                    <p style="color: #e0e7ff; margin-top: 4px; font-size: 0.92rem; max-width: 580px;">
+                        Read authentic feedback from attendees who experienced hackathons, tournaments, and masterclasses first-hand.
+                    </p>
+                </div>
+
+                <div style="background: rgba(0, 0, 0, 0.25); backdrop-filter: blur(8px); border-radius: var(--radius-md); padding: 18px 24px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.15);">
+                    <div style="font-size: 2.4rem; font-weight: 800; color: #facc15;">4.9 ★</div>
+                    <div style="font-size: 0.8rem; color: #cbd5e1;">Average Rating (120+ verified reviews)</div>
+                </div>
+            </div>
+
+            <!-- Photo Recap Gallery Section -->
+            <div style="margin-bottom: 36px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 style="font-size: 1.25rem; font-weight: 700;">📸 Campus Event Photo Highlights</h3>
+                    <span style="font-size: 0.82rem; color: var(--text-muted);">Curated from recent fests</span>
+                </div>
+
+                <div class="photo-gallery-grid">
+                    <div class="gallery-photo-item">
+                        <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=600&q=80" alt="Hackathon Coding">
+                    </div>
+                    <div class="gallery-photo-item">
+                        <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=600&q=80" alt="Concert Stage">
+                    </div>
+                    <div class="gallery-photo-item">
+                        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=600&q=80" alt="Tech Workshop">
+                    </div>
+                    <div class="gallery-photo-item">
+                        <img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80" alt="Football Tournament">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Reviews Feed -->
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 style="font-size: 1.25rem; font-weight: 700;">Recent Testimonials & Feedback</h3>
+                    <select id="reviewEventFilter" class="form-control" style="width: auto; padding: 6px 12px; font-size: 0.85rem;" onchange="renderReviews()">
+                        <option value="all">All Events</option>
+                    </select>
+                </div>
+
+                <div class="events-grid" id="reviewsGrid"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Write Review Modal -->
+    <div class="modal-overlay" id="writeReviewModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>⭐ Rate & Review an Event</h3>
+                <span class="modal-close-btn" onclick="closeReviewModal()">&times;</span>
+            </div>
+            <form onsubmit="handleReviewSubmit(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="reviewEventSelect">Select Event *</label>
+                        <select id="reviewEventSelect" class="form-control" required></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Your Rating *</label>
+                        <div class="star-rating-box" id="starBox">
+                            <span data-val="1" onclick="setRating(1)">★</span>
+                            <span data-val="2" onclick="setRating(2)">★</span>
+                            <span data-val="3" onclick="setRating(3)">★</span>
+                            <span data-val="4" onclick="setRating(4)">★</span>
+                            <span data-val="5" onclick="setRating(5)">★</span>
+                        </div>
+                        <input type="hidden" id="ratingValue" value="5">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reviewComment">Your Feedback & Highlights *</label>
+                        <textarea id="reviewComment" class="form-control" rows="4" required placeholder="What did you enjoy most about the event? (e.g. food, speakers, organization, atmosphere)"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reviewPhotoUrl">Photo Link (Optional)</label>
+                        <input type="url" id="reviewPhotoUrl" class="form-control" placeholder="https://example.com/event-photo.jpg">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeReviewModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Post Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/store.js"></script>
+    <script>
+        document.getElementById('sidebarElement').innerHTML = Store.renderSidebar('reviews');
+        document.getElementById('notifWidgetSlot').innerHTML = Store.renderTopBarNotificationWidget();
+
+        const mobileBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.getElementById('sidebarElement');
+        if (mobileBtn) {
+            mobileBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+        }
+
+        const currentUser = Store.getCurrentUser();
+        let selectedStars = 5;
+
+        function populateEventDropdowns() {
+            const events = Store.getApprovedEvents();
+            const filterSel = document.getElementById('reviewEventFilter');
+            const modalSel = document.getElementById('reviewEventSelect');
+
+            filterSel.innerHTML = '<option value="all">All Events</option>';
+            modalSel.innerHTML = '';
+
+            events.forEach(e => {
+                const opt1 = document.createElement('option');
+                opt1.value = e.title;
+                opt1.textContent = e.title;
+                filterSel.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = e.title;
+                opt2.textContent = e.title;
+                modalSel.appendChild(opt2);
+            });
+        }
+
+        function setRating(val) {
+            selectedStars = val;
+            document.getElementById('ratingValue').value = val;
+            const stars = document.querySelectorAll('#starBox span');
+            stars.forEach((s, idx) => {
+                if (idx < val) {
+                    s.classList.add('active');
+                } else {
+                    s.classList.remove('active');
+                }
+            });
+        }
+
+        function renderReviews() {
+            const reviews = Store.getReviews();
+            const filterVal = document.getElementById('reviewEventFilter').value;
+            const grid = document.getElementById('reviewsGrid');
+
+            const filtered = filterVal === 'all' ? reviews : reviews.filter(r => r.eventTitle === filterVal);
+
+            grid.innerHTML = filtered.map(r => `
+                <div class="review-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <div style="color: #f59e0b; font-size: 1.1rem; letter-spacing: 2px;">
+                                ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}
+                            </div>
+                            <h4 style="font-size: 1.05rem; font-weight: 700; margin-top: 4px;">${r.eventTitle}</h4>
+                        </div>
+                        <span style="font-size: 0.75rem; color: var(--text-light);">${r.date}</span>
+                    </div>
+
+                    <p style="font-size: 0.88rem; color: #475569; line-height: 1.5; font-style: italic;">
+                        "${r.comment}"
+                    </p>
+
+                    ${r.photoUrl ? `
+                        <div style="height: 140px; border-radius: var(--radius-md); overflow: hidden; margin-top: 4px;">
+                            <img src="${r.photoUrl}" alt="Event recap" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                    ` : ''}
+
+                    <div style="margin-top: auto; padding-top: 10px; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;">
+                        <span style="width: 24px; height: 24px; border-radius: 50%; background: #eff6ff; color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                            ${r.reviewerName.charAt(0)}
+                        </span>
+                        <div>
+                            <strong>${r.reviewerName}</strong> · <span style="color: var(--text-muted);">${r.reviewerBranch}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openReviewModal() {
+            setRating(5);
+            document.getElementById('writeReviewModal').classList.add('active');
+        }
+
+        function closeReviewModal() {
+            document.getElementById('writeReviewModal').classList.remove('active');
+        }
+
+        function handleReviewSubmit(e) {
+            e.preventDefault();
+            const newRev = Store.addReview({
+                eventTitle: document.getElementById('reviewEventSelect').value,
+                rating: selectedStars,
+                comment: document.getElementById('reviewComment').value.trim(),
+                reviewerName: currentUser ? currentUser.name : 'Student Attendee',
+                reviewerBranch: currentUser ? currentUser.branch : 'General Degree',
+                photoUrl: document.getElementById('reviewPhotoUrl').value.trim()
+            });
+
+            closeReviewModal();
+            Store.showToast('Your review has been published!', 'success');
+            renderReviews();
+            document.getElementById('reviewComment').value = '';
+            document.getElementById('reviewPhotoUrl').value = '';
+        }
+
+        populateEventDropdowns();
+        renderReviews();
+    </script>
+</body>
+</html>

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusConnect - Admin Control Center</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .admin-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .stat-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-icon.blue { background: #eff6ff; color: #2563eb; }
+        .stat-icon.amber { background: #fffbeb; color: #d97706; }
+        .stat-icon.green { background: #ecfdf5; color: #059669; }
+        .stat-icon.purple { background: #f5f3ff; color: #7c3aed; }
+
+        .stat-val {
+            font-size: 1.8rem;
+            font-weight: 800;
+            line-height: 1.1;
+            color: var(--text-main);
+        }
+
+        .stat-label {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 32px 0 16px;
+        }
+
+        .section-header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #ffffff;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .admin-table th, .admin-table td {
+            padding: 14px 18px;
+            text-align: left;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .admin-table th {
+            background-color: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        .admin-table tr:hover td {
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+<body>
+    <!-- Shared Sidebar -->
+    <aside class="sidebar" id="sidebarElement"></aside>
+
+    <div class="main-wrapper">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <button class="mobile-nav-toggle" id="mobileMenuBtn" aria-label="Toggle navigation">☰</button>
+                <div class="page-headline">
+                    <h1>Campus Admin Control Center</h1>
+                    <p>Review event pitches, manage live catalogs, and track attendee rosters</p>
+                </div>
+            </div>
+            <div class="top-bar-actions">
+                <div id="notifWidgetSlot"></div>
+                <a href="checkin.html" class="btn btn-secondary btn-sm" title="Launch gate pass scanner">
+                    📲 Gate Scanner
+                </a>
+                <button onclick="resetDataWithConfirm()" class="btn btn-secondary btn-sm" title="Restore default sample events">
+                    🔄 Reset Sample Data
+                </button>
+                <a href="index.html" class="btn btn-primary btn-sm">
+                    View Student Portal →
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="content-container">
+            <!-- Stats Overview -->
+            <section class="admin-stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">🎪</div>
+                    <div>
+                        <div class="stat-val" id="statApproved">0</div>
+                        <div class="stat-label">Active Approved Events</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon amber">⏳</div>
+                    <div>
+                        <div class="stat-val" id="statPending">0</div>
+                        <div class="stat-label">Pitches Pending Review</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon green">🎟️</div>
+                    <div>
+                        <div class="stat-val" id="statBookings">0</div>
+                        <div class="stat-label">Total Student Bookings</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon purple">🎓</div>
+                    <div>
+                        <div class="stat-val" id="statStudents">2</div>
+                        <div class="stat-label">Registered Accounts</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pending Pitches Section -->
+            <div class="section-header">
+                <h2>⏳ Pending Event Pitches (<span id="pendingBadge">0</span>)</h2>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">
+                    Approve or reject proposals submitted by campus societies
+                </div>
+            </div>
+
+            <div class="events-grid" id="pendingGrid"></div>
+
+            <div id="noPendingMessage" style="display: none; text-align: center; padding: 40px; background: #fff; border-radius: var(--radius-lg); border: 1px dashed var(--border-color); margin-bottom: 32px;">
+                <div style="font-size: 2.2rem; margin-bottom: 8px;">✅</div>
+                <h4 style="font-size: 1.1rem; font-weight: 700;">All caught up!</h4>
+                <p style="color: var(--text-muted); font-size: 0.88rem;">No pending pitches awaiting review right now.</p>
+            </div>
+
+            <!-- Approved Events Directory Section -->
+            <div class="section-header" style="margin-top: 48px;">
+                <h2>🎪 Live Approved Events Catalog (<span id="approvedBadge">0</span>)</h2>
+                <input type="text" id="filterApprovedInput" placeholder="Filter active events..." class="form-control" style="width: 280px; padding: 8px 12px; font-size: 0.85rem;">
+            </div>
+
+            <div class="events-grid" id="approvedGrid"></div>
+        </main>
+    </div>
+
+    <!-- Review Pitch Modal -->
+    <div class="modal-overlay" id="pitchReviewModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Review Event Proposal</h3>
+                <span class="modal-close-btn" onclick="closeReviewModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 16px;">
+                    <span class="badge badge-warning" id="modalPitchCategory">Category</span>
+                    <h3 style="font-size: 1.35rem; font-weight: 800; margin-top: 6px;" id="modalPitchTitle">Event Title</h3>
+                    <p style="color: #475569; font-size: 0.92rem; margin-top: 8px; line-height: 1.5;" id="modalPitchDesc"></p>
+                </div>
+
+                <div style="background: #f8fafc; padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); display: grid; grid-template-columns: 1fr 1fr; gap: 14px; font-size: 0.88rem;">
+                    <div>📅 <strong>Dates:</strong> <span id="modalPitchDates">--</span></div>
+                    <div>⏰ <strong>Time:</strong> <span id="modalPitchTime">--</span></div>
+                    <div>📍 <strong>Venue:</strong> <span id="modalPitchVenue">--</span></div>
+                    <div>👥 <strong>Format:</strong> <span id="modalPitchType">--</span></div>
+                    <div>🎯 <strong>Capacity:</strong> <span id="modalPitchCapacity">--</span></div>
+                    <div>🏛️ <strong>Organizer:</strong> <span id="modalPitchOrganizer">--</span></div>
+                    <div style="grid-column: span 2;">📞 <strong>Contact:</strong> <span id="modalPitchContact">--</span></div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <label for="rejectReason" style="font-size: 0.85rem; font-weight: 600; color: #475569;">Optional Feedback / Reason (if rejecting):</label>
+                    <input type="text" id="rejectReason" class="form-control" placeholder="e.g. Venue is booked for another exam on this date." style="margin-top: 6px;">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeReviewModal()">Cancel</button>
+                <button type="button" class="btn btn-danger" id="btnRejectPitch">Reject Pitch</button>
+                <button type="button" class="btn btn-success" id="btnApprovePitch">✅ Approve & Publish</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendees Roster Modal -->
+    <div class="modal-overlay" id="attendeesModal">
+        <div class="modal-card" style="max-width: 750px;">
+            <div class="modal-header">
+                <h3>👥 Registered Attendees Roster</h3>
+                <span class="modal-close-btn" onclick="closeAttendeesModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 16px;">
+                    <h4 style="font-size: 1.15rem; font-weight: 700;" id="rosterEventTitle">Event Title</h4>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;" id="rosterEventMeta"></p>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="admin-table" id="rosterTable">
+                        <thead>
+                            <tr>
+                                <th>Ticket ID</th>
+                                <th>Attendee</th>
+                                <th>Student Roll</th>
+                                <th>Contact Email</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rosterTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div id="noAttendeesMsg" style="display: none; text-align: center; padding: 30px; color: var(--text-muted);">
+                    No students have registered for this event yet.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeAttendeesModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/store.js"></script>
+    <script>
+        document.getElementById('sidebarElement').innerHTML = Store.renderSidebar('admin');
+        document.getElementById('notifWidgetSlot').innerHTML = Store.renderTopBarNotificationWidget();
+
+        const mobileBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.getElementById('sidebarElement');
+        if (mobileBtn) {
+            mobileBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+        }
+
+        let pendingEvents = Store.getPendingEvents();
+        let approvedEvents = Store.getApprovedEvents();
+        let activePitchIndex = null;
+
+        function refreshAdminDashboard() {
+            pendingEvents = Store.getPendingEvents();
+            approvedEvents = Store.getApprovedEvents();
+            const bookings = Store.getBookings();
+
+            document.getElementById('statApproved').textContent = approvedEvents.length;
+            document.getElementById('statPending').textContent = pendingEvents.length;
+            document.getElementById('statBookings').textContent = bookings.length;
+            document.getElementById('statStudents').textContent = (JSON.parse(localStorage.getItem('cc_users')) || []).length;
+
+            document.getElementById('pendingBadge').textContent = pendingEvents.length;
+            document.getElementById('approvedBadge').textContent = approvedEvents.length;
+
+            renderPendingCards();
+            renderApprovedCards();
+        }
+
+        function renderPendingCards() {
+            const grid = document.getElementById('pendingGrid');
+            const emptyMsg = document.getElementById('noPendingMessage');
+            grid.innerHTML = '';
+
+            if (pendingEvents.length === 0) {
+                emptyMsg.style.display = 'block';
+                return;
+            }
+            emptyMsg.style.display = 'none';
+
+            pendingEvents.forEach((evt, idx) => {
+                const card = document.createElement('div');
+                card.className = 'event-card';
+                card.innerHTML = `
+                    <div class="card-header-visual ${evt.category || 'tech'}">
+                        <span class="card-category-tag">${evt.category || 'Pitch'}</span>
+                        <span class="badge badge-warning">⏳ Awaiting Review</span>
+                    </div>
+
+                    <div class="card-body">
+                        <h3 class="card-title">${evt.title}</h3>
+                        <p class="card-desc">${evt.description}</p>
+
+                        <div class="card-meta-list">
+                            <div class="card-meta-item">
+                                <span class="icon">📅</span>
+                                <span>${evt.startDate} to ${evt.endDate}</span>
+                            </div>
+                            <div class="card-meta-item">
+                                <span class="icon">📍</span>
+                                <span>${evt.venue || 'Venue TBD'}</span>
+                            </div>
+                            <div class="card-meta-item">
+                                <span class="icon">🏛️</span>
+                                <span>By: <strong>${evt.organizer}</strong></span>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <button onclick="openReviewModal(${idx})" class="btn btn-primary btn-sm btn-block">
+                                🔍 Inspect & Decide
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderApprovedCards() {
+            const grid = document.getElementById('approvedGrid');
+            const filterVal = document.getElementById('filterApprovedInput').value.toLowerCase();
+            grid.innerHTML = '';
+
+            const filtered = approvedEvents.filter(e => 
+                !filterVal || 
+                (e.title && e.title.toLowerCase().includes(filterVal)) ||
+                (e.organizer && e.organizer.toLowerCase().includes(filterVal))
+            );
+
+            filtered.forEach((evt, idx) => {
+                const realIndex = approvedEvents.indexOf(evt);
+                const card = document.createElement('div');
+                card.className = 'event-card';
+                card.innerHTML = `
+                    <div class="card-header-visual ${evt.category || 'tech'}">
+                        <span class="card-category-tag">${evt.category || 'Event'}</span>
+                        <span class="badge badge-success">✅ Published</span>
+                    </div>
+
+                    <div class="card-body">
+                        <h3 class="card-title">${evt.title}</h3>
+                        <p class="card-desc">${evt.description}</p>
+
+                        <div class="card-meta-list">
+                            <div class="card-meta-item">
+                                <span class="icon">📅</span>
+                                <span>${evt.startDate} | ⏰ ${evt.time || 'TBD'}</span>
+                            </div>
+                            <div class="card-meta-item">
+                                <span class="icon">📍</span>
+                                <span>${evt.venue || 'Campus'}</span>
+                            </div>
+                            <div class="card-meta-item">
+                                <span class="icon">🎟️</span>
+                                <span>${evt.spots} / ${evt.capacity} spots remaining</span>
+                            </div>
+                        </div>
+
+                        <div class="card-footer" style="flex-direction: column; gap: 8px;">
+                            <button onclick="openAttendeesModal('${evt.title.replace(/'/g, "\\'")}')" class="btn btn-secondary btn-sm btn-block">
+                                📋 View Attendee Roster
+                            </button>
+                            <button onclick="handleDeleteApproved(${realIndex}, '${evt.title.replace(/'/g, "\\'")}')" class="btn btn-danger btn-sm btn-block">
+                                🗑️ Unpublish Event
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        document.getElementById('filterApprovedInput').addEventListener('input', renderApprovedCards);
+
+        function openReviewModal(idx) {
+            activePitchIndex = idx;
+            const evt = pendingEvents[idx];
+
+            document.getElementById('modalPitchCategory').textContent = evt.category || 'General';
+            document.getElementById('modalPitchTitle').textContent = evt.title;
+            document.getElementById('modalPitchDesc').textContent = evt.description;
+            document.getElementById('modalPitchDates').textContent = `${evt.startDate} to ${evt.endDate}`;
+            document.getElementById('modalPitchTime').textContent = evt.time || 'TBD';
+            document.getElementById('modalPitchVenue').textContent = evt.venue || 'Venue TBD';
+            document.getElementById('modalPitchType').textContent = `${evt.eventType} (${evt.groupRange || 'Solo'})`;
+            document.getElementById('modalPitchCapacity').textContent = `${evt.capacity} Attendees`;
+            document.getElementById('modalPitchOrganizer').textContent = evt.organizer;
+            document.getElementById('modalPitchContact').textContent = `${evt.contact} | 📞 ${evt.phone}`;
+            document.getElementById('rejectReason').value = '';
+
+            document.getElementById('btnApprovePitch').onclick = () => {
+                Store.approveEvent(activePitchIndex);
+                closeReviewModal();
+                Store.showToast(`"${evt.title}" has been approved and published to live catalog!`, 'success');
+                refreshAdminDashboard();
+            };
+
+            document.getElementById('btnRejectPitch').onclick = () => {
+                const reason = document.getElementById('rejectReason').value.trim() || 'Not approved by events committee.';
+                Store.rejectEvent(activePitchIndex, reason);
+                closeReviewModal();
+                Store.showToast(`Pitch rejected with feedback sent to organizer.`, 'info');
+                refreshAdminDashboard();
+            };
+
+            document.getElementById('pitchReviewModal').classList.add('active');
+        }
+
+        function closeReviewModal() {
+            document.getElementById('pitchReviewModal').classList.remove('active');
+        }
+
+        function openAttendeesModal(eventTitle) {
+            const allBookings = Store.getBookings();
+            const matched = allBookings.filter(b => b.eventTitle === eventTitle);
+
+            document.getElementById('rosterEventTitle').textContent = eventTitle;
+            document.getElementById('rosterEventMeta').textContent = `Total Confirmed Registrations: ${matched.length}`;
+
+            const tbody = document.getElementById('rosterTableBody');
+            const noMsg = document.getElementById('noAttendeesMsg');
+            tbody.innerHTML = '';
+
+            if (matched.length === 0) {
+                document.getElementById('rosterTable').style.display = 'none';
+                noMsg.style.display = 'block';
+            } else {
+                document.getElementById('rosterTable').style.display = 'table';
+                noMsg.style.display = 'none';
+                tbody.innerHTML = matched.map(b => `
+                    <tr>
+                        <td style="font-family: monospace; font-weight: 700; color: var(--primary);">${b.id}</td>
+                        <td><strong>${b.attendeeName}</strong></td>
+                        <td>${b.rollNumber || 'N/A'}</td>
+                        <td>${b.attendeeEmail}</td>
+                        <td><span class="badge ${b.bookingType === 'Group' ? 'badge-group' : 'badge-solo'}">${b.bookingType || 'Solo'}</span></td>
+                    </tr>
+                `).join('');
+            }
+
+            document.getElementById('attendeesModal').classList.add('active');
+        }
+
+        function closeAttendeesModal() {
+            document.getElementById('attendeesModal').classList.remove('active');
+        }
+
+        function handleDeleteApproved(idx, title) {
+            if (confirm(`Are you sure you want to unpublish "${title}"? This cannot be undone.`)) {
+                Store.deleteApprovedEvent(idx);
+                Store.showToast(`Event "${title}" has been removed.`, 'info');
+                refreshAdminDashboard();
+            }
+        }
+
+        function resetDataWithConfirm() {
+            if (confirm("Reset all events, bookings, and users back to the fresh demo dataset?")) {
+                Store.resetAllData();
+                Store.showToast("All sample data reloaded cleanly!", "success");
+                refreshAdminDashboard();
+            }
+        }
+
+        refreshAdminDashboard();
+    </script>
+</body>
+</html>

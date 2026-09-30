@@ -1,0 +1,12 @@
+@import url('css/styles.css');
+
+.booking-container {
+  background-color: #fff;
+  padding: 32px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  max-width: 520px;
+  width: 100%;
+  margin: 30px auto;
+  border: 1px solid var(--border-color);
+}

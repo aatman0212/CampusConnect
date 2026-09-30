@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusConnect - Interactive Calendar & Schedule</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Shared Sidebar -->
+    <aside class="sidebar" id="sidebarElement"></aside>
+
+    <div class="main-wrapper">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <button class="mobile-nav-toggle" id="mobileMenuBtn" aria-label="Toggle navigation">☰</button>
+                <div class="page-headline">
+                    <h1>Campus Calendar</h1>
+                    <p>Visual monthly schedule, clash detection, and calendar exports</p>
+                </div>
+            </div>
+            <div class="top-bar-actions">
+                <div id="notifWidgetSlot"></div>
+                <a href="new_event.html" class="btn btn-primary btn-sm">+ Pitch Event</a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="content-container">
+            <div class="calendar-container">
+                <!-- Month & Category Bar -->
+                <div class="calendar-header-bar">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <button onclick="prevMonth()" class="btn btn-secondary btn-sm">◀ Prev</button>
+                        <h2 id="calendarMonthTitle" style="font-size: 1.3rem; font-weight: 800; min-width: 180px; text-align: center;">October 2026</h2>
+                        <button onclick="nextMonth()" class="btn btn-secondary btn-sm">Next ▶</button>
+                        <button onclick="goToCurrentMonth()" class="btn btn-sm" style="background: #eff6ff; color: var(--primary);">Today</button>
+                    </div>
+
+                    <!-- Category filter pills -->
+                    <div class="filter-pills" id="calendarFilterPills">
+                        <button class="filter-pill active" data-cat="all">All</button>
+                        <button class="filter-pill" data-cat="tech">Tech</button>
+                        <button class="filter-pill" data-cat="cultural">Cultural</button>
+                        <button class="filter-pill" data-cat="sports">Sports</button>
+                        <button class="filter-pill" data-cat="workshop">Workshops</button>
+                    </div>
+                </div>
+
+                <!-- Calendar Day Headers -->
+                <div class="calendar-grid" style="margin-bottom: 6px;">
+                    <div class="calendar-day-header">Sun</div>
+                    <div class="calendar-day-header">Mon</div>
+                    <div class="calendar-day-header">Tue</div>
+                    <div class="calendar-day-header">Wed</div>
+                    <div class="calendar-day-header">Thu</div>
+                    <div class="calendar-day-header">Fri</div>
+                    <div class="calendar-day-header">Sat</div>
+                </div>
+
+                <!-- Calendar Days Grid -->
+                <div class="calendar-grid" id="calendarDaysGrid"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Event Detail Modal -->
+    <div class="modal-overlay" id="eventDetailModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span class="badge" id="modalCategoryBadge">Category</span>
+                <span class="modal-close-btn" onclick="closeEventModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <h3 style="font-size: 1.3rem; font-weight: 800; margin-bottom: 8px;" id="modalEventTitle">Event Title</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px;" id="modalEventDesc"></p>
+
+                <div style="background: #f8fafc; padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem; margin-bottom: 20px;">
+                    <div>📅 <strong>Dates:</strong> <span id="modalEventDates">--</span></div>
+                    <div>⏰ <strong>Time:</strong> <span id="modalEventTime">--</span></div>
+                    <div>📍 <strong>Venue:</strong> <span id="modalEventVenue">--</span></div>
+                    <div>🎟️ <strong>Availability:</strong> <span id="modalEventSpots">--</span></div>
+                    <div>🏛️ <strong>Organizer:</strong> <span id="modalEventOrganizer">--</span></div>
+                </div>
+
+                <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+                    <div style="font-size: 0.78rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); margin-bottom: 10px;">
+                        Calendar Sync & Export
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <a id="btnGoogleCalendar" target="_blank" class="btn btn-secondary btn-sm" style="flex: 1;">
+                            📅 Add to Google Calendar
+                        </a>
+                        <button onclick="downloadIcsFile()" class="btn btn-secondary btn-sm" style="flex: 1;">
+                            📥 Download .ics File
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeEventModal()">Close</button>
+                <a id="btnBookFromCalendar" class="btn btn-primary">🎟️ Book Spot Now</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/store.js"></script>
+    <script>
+        document.getElementById('sidebarElement').innerHTML = Store.renderSidebar('calendar');
+        document.getElementById('notifWidgetSlot').innerHTML = Store.renderTopBarNotificationWidget();
+
+        const mobileBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.getElementById('sidebarElement');
+        if (mobileBtn) {
+            mobileBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+        }
+
+        // Calendar Date State (default to Oct 2026 for sample events)
+        let currentYear = 2026;
+        let currentMonth = 9; // 0-indexed: 9 = October
+        let activeCategory = 'all';
+        let selectedEvent = null;
+
+        const monthNames = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+
+        function renderCalendar() {
+            const titleEl = document.getElementById('calendarMonthTitle');
+            titleEl.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+
+            const grid = document.getElementById('calendarDaysGrid');
+            grid.innerHTML = '';
+
+            const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+            const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const prevLastDate = new Date(currentYear, currentMonth, 0).getDate();
+
+            const events = Store.getApprovedEvents();
+
+            // Previous month padding cells
+            for (let i = firstDayIndex; i > 0; i--) {
+                const dayNum = prevLastDate - i + 1;
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell other-month';
+                cell.innerHTML = `<span class="cell-date-num">${dayNum}</span>`;
+                grid.appendChild(cell);
+            }
+
+            // Current month cells
+            for (let day = 1; day <= lastDate; day++) {
+                const dayStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell';
+
+                // Check if cell is today
+                const today = new Date();
+                if (today.getFullYear() === currentYear && today.getMonth() === currentMonth && today.getDate() === day) {
+                    cell.classList.add('today');
+                }
+
+                cell.innerHTML = `<span class="cell-date-num">${day}</span>`;
+
+                // Find matching events on this date
+                const dayEvents = events.filter(evt => {
+                    if (activeCategory !== 'all' && evt.category !== activeCategory) return false;
+                    return dayStr >= evt.startDate && dayStr <= (evt.endDate || evt.startDate);
+                });
+
+                dayEvents.forEach(evt => {
+                    const pill = document.createElement('div');
+                    pill.className = `calendar-event-pill ${evt.category || 'tech'}`;
+                    pill.textContent = evt.title;
+                    pill.title = `${evt.title} (${evt.time})`;
+                    pill.onclick = (e) => {
+                        e.stopPropagation();
+                        openEventModal(evt);
+                    };
+                    cell.appendChild(pill);
+                });
+
+                grid.appendChild(cell);
+            }
+        }
+
+        function prevMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar();
+        }
+
+        function goToCurrentMonth() {
+            currentYear = 2026;
+            currentMonth = 9; // October 2026
+            renderCalendar();
+        }
+
+        // Category filter buttons
+        document.querySelectorAll('#calendarFilterPills .filter-pill').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#calendarFilterPills .filter-pill').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                activeCategory = this.dataset.cat;
+                renderCalendar();
+            });
+        });
+
+        // Event Modal & Google Calendar / .ics export
+        function openEventModal(event) {
+            selectedEvent = event;
+            const events = Store.getApprovedEvents();
+            const realIdx = events.indexOf(event);
+
+            document.getElementById('modalCategoryBadge').textContent = event.category || 'Event';
+            document.getElementById('modalEventTitle').textContent = event.title;
+            document.getElementById('modalEventDesc').textContent = event.description;
+            document.getElementById('modalEventDates').textContent = `${event.startDate} to ${event.endDate || event.startDate}`;
+            document.getElementById('modalEventTime').textContent = event.time || 'TBD';
+            document.getElementById('modalEventVenue').textContent = event.venue || 'Campus Auditorium';
+            document.getElementById('modalEventSpots').textContent = `${event.spots} spots left (of ${event.capacity})`;
+            document.getElementById('modalEventOrganizer').textContent = event.organizer;
+
+            // Booking button
+            document.getElementById('btnBookFromCalendar').href = `book.html?event=${realIdx}`;
+
+            // Google Calendar Link Generator
+            const gStart = event.startDate.replace(/-/g, '') + 'T100000Z';
+            const gEnd = (event.endDate || event.startDate).replace(/-/g, '') + 'T180000Z';
+            const gDetails = encodeURIComponent(event.description);
+            const gLoc = encodeURIComponent(event.venue || 'Campus');
+            const gTitle = encodeURIComponent(event.title);
+
+            const gUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${gTitle}&dates=${gStart}/${gEnd}&details=${gDetails}&location=${gLoc}`;
+            document.getElementById('btnGoogleCalendar').href = gUrl;
+
+            document.getElementById('eventDetailModal').classList.add('active');
+        }
+
+        function closeEventModal() {
+            document.getElementById('eventDetailModal').classList.remove('active');
+        }
+
+        function downloadIcsFile() {
+            if (!selectedEvent) return;
+            const icsData = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//CampusConnect//Event Calendar//EN',
+                'BEGIN:VEVENT',
+                `SUMMARY:${selectedEvent.title}`,
+                `DESCRIPTION:${selectedEvent.description.replace(/\n/g, '\\n')}`,
+                `LOCATION:${selectedEvent.venue || 'Campus'}`,
+                `DTSTART;VALUE=DATE:${selectedEvent.startDate.replace(/-/g, '')}`,
+                `DTEND;VALUE=DATE:${(selectedEvent.endDate || selectedEvent.startDate).replace(/-/g, '')}`,
+                'END:VEVENT',
+                'END:VCALENDAR'
+            ].join('\r\n');
+
+            const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${selectedEvent.title.replace(/\s+/g, '_')}.ics`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            Store.showToast('.ics calendar file downloaded!', 'success');
+        }
+
+        // Initialize calendar
+        renderCalendar();
+    </script>
+</body>
+</html>

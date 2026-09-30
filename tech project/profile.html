@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusConnect - Student Profile & Certificates</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .profile-hero {
+            background: linear-gradient(135deg, #1e1b4b, #2563eb);
+            border-radius: var(--radius-lg);
+            padding: 36px;
+            color: #ffffff;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            flex-wrap: wrap;
+        }
+
+        .profile-avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            color: #ffffff;
+            font-size: 2.5rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 14px;
+        }
+
+        .badge-achievement-card {
+            background: #ffffff;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .badge-achievement-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            background: #eff6ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Shared Sidebar -->
+    <aside class="sidebar" id="sidebarElement"></aside>
+
+    <div class="main-wrapper">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <button class="mobile-nav-toggle" id="mobileMenuBtn" aria-label="Toggle navigation">☰</button>
+                <div class="page-headline">
+                    <h1>Student Profile & Honors</h1>
+                    <p>Manage your campus portfolio, skills, and official event certificates</p>
+                </div>
+            </div>
+            <div class="top-bar-actions">
+                <div id="notifWidgetSlot"></div>
+                <button onclick="openEditProfileModal()" class="btn btn-secondary btn-sm">
+                    ✏️ Edit Profile
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="content-container">
+            <!-- Profile Hero -->
+            <div class="profile-hero">
+                <div class="profile-avatar-large" id="profAvatar">A</div>
+                <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <h2 style="font-size: 1.8rem; font-weight: 800;" id="profName">Student Name</h2>
+                        <span class="badge" style="background: rgba(255,255,255,0.2); color: #fff;" id="profRole">🎓 Verified Student</span>
+                    </div>
+                    <p style="color: #cbd5e1; font-size: 0.95rem; margin-top: 6px; max-width: 600px;" id="profBio"></p>
+
+                    <div style="display: flex; gap: 18px; margin-top: 14px; font-size: 0.85rem; color: #e0e7ff; flex-wrap: wrap;">
+                        <div>🎓 <strong>Roll:</strong> <span id="profRoll"></span></div>
+                        <div>🏛️ <strong>Branch:</strong> <span id="profBranch"></span></div>
+                        <div>📧 <strong>Email:</strong> <span id="profEmail"></span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skills & Portfolio Tags -->
+            <div style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 24px; margin-bottom: 28px; box-shadow: var(--shadow-sm);">
+                <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 12px;">Technical Skills & Specializations</h3>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;" id="skillsList"></div>
+            </div>
+
+            <!-- Achievement Badges -->
+            <div style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 24px; margin-bottom: 28px; box-shadow: var(--shadow-sm);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="font-size: 1.15rem; font-weight: 700;">Earned Campus Badges & Honors</h3>
+                    <span class="badge badge-success">Active Participant</span>
+                </div>
+                <div class="badges-grid">
+                    <div class="badge-achievement-card">
+                        <div class="badge-achievement-icon" style="background: #eff6ff;">🏆</div>
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.9rem;">Hackathon Pioneer</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Joined university coding challenges</div>
+                        </div>
+                    </div>
+
+                    <div class="badge-achievement-card">
+                        <div class="badge-achievement-icon" style="background: #ecfdf5;">⚡</div>
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.9rem;">Active Attendee</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Attended campus bootcamps</div>
+                        </div>
+                    </div>
+
+                    <div class="badge-achievement-card">
+                        <div class="badge-achievement-icon" style="background: #fdf2f8;">👑</div>
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.9rem;">Squad Commander</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Formed an official student team</div>
+                        </div>
+                    </div>
+
+                    <div class="badge-achievement-card">
+                        <div class="badge-achievement-icon" style="background: #fffbeb;">🏅</div>
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.9rem;">Early Bird RSVP</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Registered in the first 10 spots</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Official Certificates Generator -->
+            <div style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 24px; box-shadow: var(--shadow-sm);">
+                <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 6px;">Official Certificates of Participation</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">
+                    Download verified certificates bearing the University Seal and digital verification code.
+                </p>
+
+                <div id="certificatesList" style="display: flex; flex-direction: column; gap: 14px;"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal-overlay" id="editProfileModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Edit Student Profile</h3>
+                <span class="modal-close-btn" onclick="closeEditModal()">&times;</span>
+            </div>
+            <form onsubmit="handleSaveProfile(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="editName">Full Name</label>
+                        <input type="text" id="editName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBio">Bio / Headline</label>
+                        <textarea id="editBio" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editBranch">Branch / Major</label>
+                            <input type="text" id="editBranch" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editPhone">Contact Phone</label>
+                            <input type="tel" id="editPhone" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editSkills">Skills (comma-separated)</label>
+                        <input type="text" id="editSkills" class="form-control" placeholder="Python, React, UI/UX, Cloud">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Official Certificate Modal (Printable) -->
+    <div class="modal-overlay" id="certModal">
+        <div class="modal-card" style="max-width: 820px;">
+            <div class="modal-header">
+                <h3>🎓 Verified Participation Certificate</h3>
+                <span class="modal-close-btn" onclick="closeCertModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="certificate-preview-card" id="printableCertificate">
+                    <div class="cert-emblem">🏛️</div>
+                    <div style="font-size: 0.85rem; letter-spacing: 0.15em; text-transform: uppercase; color: #475569; font-weight: 700;">
+                        University Campus Affairs Board
+                    </div>
+                    <div class="cert-title">Certificate of Participation</div>
+                    <p style="color: #64748b; font-size: 0.95rem; margin-top: 10px;">
+                        This certificate is officially awarded to
+                    </p>
+
+                    <div class="cert-recipient" id="certRecipient">Student Name</div>
+
+                    <p style="color: #475569; font-size: 1rem; max-width: 520px; margin: 0 auto; line-height: 1.6;">
+                        for outstanding dedication and active participation in the university event
+                    </p>
+
+                    <div style="font-size: 1.35rem; font-weight: 800; color: #1e3a8a; margin: 12px 0;" id="certEventTitle">
+                        Event Title
+                    </div>
+
+                    <div style="font-size: 0.85rem; color: #64748b;">
+                        Conducted on <strong id="certDate">October 08, 2026</strong> at <strong id="certVenue">Campus Complex</strong>.
+                    </div>
+
+                    <div style="display: flex; justify-content: space-around; align-items: center; margin-top: 32px; padding-top: 20px; border-top: 1px dashed #cbd5e1;">
+                        <div>
+                            <div class="cert-gold-seal">★</div>
+                            <div style="font-size: 0.72rem; font-weight: 700; color: #b45309; text-transform: uppercase; margin-top: 4px;">
+                                Verified Seal
+                            </div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-family: 'Brush Script MT', cursive, serif; font-size: 1.8rem; color: #1e3a8a;">Dean Arthur Pendelton</div>
+                            <div style="border-top: 1px solid #94a3b8; width: 180px; margin: 4px auto 0;"></div>
+                            <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-top: 4px;">Dean of Student Affairs</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 24px; font-family: monospace; font-size: 0.75rem; color: #94a3b8;">
+                        Security Verification Hash: <span id="certHash">CERT-8921-2026-CAMPUS</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeCertModal()">Close</button>
+                <button onclick="window.print()" class="btn btn-primary">
+                    🖨️ Print / Save as PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/store.js"></script>
+    <script>
+        document.getElementById('sidebarElement').innerHTML = Store.renderSidebar('profile');
+        document.getElementById('notifWidgetSlot').innerHTML = Store.renderTopBarNotificationWidget();
+
+        const mobileBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.getElementById('sidebarElement');
+        if (mobileBtn) {
+            mobileBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+        }
+
+        const user = Store.getCurrentUser() || {
+            name: 'Alex Rivera',
+            email: 'alex.rivera@campus.edu',
+            roll: 'CS-2023-042',
+            branch: 'Computer Science',
+            role: 'student',
+            bio: 'Junior CS student passionate about full-stack web development, LLMs, and open-source hackathons.',
+            skills: ['Python', 'React', 'Node.js', 'PyTorch', 'UI/UX Design']
+        };
+
+        function renderProfile() {
+            document.getElementById('profAvatar').textContent = user.name.charAt(0).toUpperCase();
+            document.getElementById('profName').textContent = user.name;
+            document.getElementById('profRole').textContent = user.role === 'admin' ? '🛡️ Campus Administrator' : '🎓 Verified Student';
+            document.getElementById('profBio').textContent = user.bio || 'Campus community member.';
+            document.getElementById('profRoll').textContent = user.roll || 'N/A';
+            document.getElementById('profBranch').textContent = user.branch || 'General';
+            document.getElementById('profEmail').textContent = user.email;
+
+            // Render skills
+            const skills = user.skills || ['Python', 'React', 'Teamwork'];
+            document.getElementById('skillsList').innerHTML = skills.map(s => `
+                <span class="badge" style="background: #f1f5f9; color: var(--text-main); font-size: 0.85rem; padding: 6px 14px;">
+                    💻 ${s}
+                </span>
+            `).join('');
+
+            // Render certificates from user bookings
+            const bookings = Store.getUserBookings(user.email);
+            const certList = document.getElementById('certificatesList');
+
+            if (bookings.length === 0) {
+                certList.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px;">No event passes yet. Once you reserve or attend an event, your certificate will appear here!</div>`;
+                return;
+            }
+
+            certList.innerHTML = bookings.map(b => `
+                <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 1rem;">${b.eventTitle}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
+                            📅 ${b.eventDate} | 📍 ${b.venue} | Pass: ${b.id}
+                        </div>
+                    </div>
+                    <button onclick="openCertificateModal('${b.eventTitle.replace(/'/g, "\\'")}', '${b.eventDate}', '${b.venue.replace(/'/g, "\\'")}', '${b.id}')" class="btn btn-secondary btn-sm">
+                        📜 View & Print Certificate
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Edit Profile Modal
+        function openEditProfileModal() {
+            document.getElementById('editName').value = user.name || '';
+            document.getElementById('editBio').value = user.bio || '';
+            document.getElementById('editBranch').value = user.branch || '';
+            document.getElementById('editPhone').value = user.phone || '';
+            document.getElementById('editSkills').value = (user.skills || []).join(', ');
+            document.getElementById('editProfileModal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editProfileModal').classList.remove('active');
+        }
+
+        function handleSaveProfile(e) {
+            e.preventDefault();
+            const skillsArray = document.getElementById('editSkills').value.split(',').map(s => s.trim()).filter(Boolean);
+            const updated = Store.updateCurrentUserProfile({
+                name: document.getElementById('editName').value.trim(),
+                bio: document.getElementById('editBio').value.trim(),
+                branch: document.getElementById('editBranch').value.trim(),
+                phone: document.getElementById('editPhone').value.trim(),
+                skills: skillsArray
+            });
+
+            closeEditModal();
+            Store.showToast('Profile updated successfully!', 'success');
+            renderProfile();
+        }
+
+        // Certificate Modal
+        function openCertificateModal(eventTitle, eventDate, eventVenue, ticketId) {
+            document.getElementById('certRecipient').textContent = user.name;
+            document.getElementById('certEventTitle').textContent = eventTitle;
+            document.getElementById('certDate').textContent = eventDate;
+            document.getElementById('certVenue').textContent = eventVenue;
+            document.getElementById('certHash').textContent = `CERT-${ticketId}-2026-VERIFIED`;
+            document.getElementById('certModal').classList.add('active');
+        }
+
+        function closeCertModal() {
+            document.getElementById('certModal').classList.remove('active');
+        }
+
+        renderProfile();
+    </script>
+</body>
+</html>

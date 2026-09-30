@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusConnect - Reserve Event Spot</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .booking-page-layout {
+            max-width: 840px;
+            margin: 0 auto;
+        }
+
+        .event-summary-banner {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: #ffffff;
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .booking-card {
+            background: #ffffff;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            padding: 32px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .section-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Shared Sidebar -->
+    <aside class="sidebar" id="sidebarElement"></aside>
+
+    <div class="main-wrapper">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <button class="mobile-nav-toggle" id="mobileMenuBtn" aria-label="Toggle navigation">☰</button>
+                <div class="page-headline">
+                    <h1>Reserve Your Event Pass</h1>
+                    <p>Confirm your attendance and generate your official digital ticket</p>
+                </div>
+            </div>
+            <div class="top-bar-actions">
+                <div id="notifWidgetSlot"></div>
+                <a href="index.html" class="btn btn-secondary btn-sm">
+                    ← Back to Catalog
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="content-container">
+            <div class="booking-page-layout">
+                <!-- Event Summary Header -->
+                <div class="event-summary-banner" id="eventSummary">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <span class="badge" style="background: rgba(255,255,255,0.2); color: #fff; margin-bottom: 8px;" id="badgeFormat">Event Format</span>
+                            <h2 style="font-size: 1.6rem; font-weight: 800;" id="eventTitle">Loading Event Details...</h2>
+                            <p style="color: #e0e7ff; margin-top: 6px; font-size: 0.95rem; max-width: 600px;" id="eventDesc"></p>
+                        </div>
+                        <div style="background: rgba(0, 0, 0, 0.25); backdrop-filter: blur(6px); border-radius: var(--radius-md); padding: 12px 18px; text-align: center;">
+                            <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #93c5fd;">Availability</div>
+                            <div style="font-size: 1.4rem; font-weight: 800;" id="eventSpots">0</div>
+                            <div style="font-size: 0.72rem; color: #cbd5e1;">Spots Remaining</div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 0.88rem;">
+                        <div>📅 <strong>Date:</strong> <span id="eventDate">--</span></div>
+                        <div>⏰ <strong>Time:</strong> <span id="eventTime">--</span></div>
+                        <div>📍 <strong>Venue:</strong> <span id="eventVenue">--</span></div>
+                        <div>🏛️ <strong>Organizer:</strong> <span id="eventOrganizer">--</span></div>
+                    </div>
+                </div>
+
+                <!-- Booking Form Card -->
+                <div class="booking-card">
+                    <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 4px;">Attendee Registration Form</h3>
+                    <div class="section-subtitle">Please enter accurate details for badge and ticket verification.</div>
+
+                    <form id="bookingForm" onsubmit="submitBooking(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="attendeeName">Full Name *</label>
+                                <input type="text" id="attendeeName" class="form-control" required placeholder="e.g. Alex Rivera">
+                            </div>
+                            <div class="form-group">
+                                <label for="attendeeEmail">University Email *</label>
+                                <input type="email" id="attendeeEmail" class="form-control" required placeholder="name@campus.edu">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="attendeePhone">Phone Number *</label>
+                                <input type="tel" id="attendeePhone" class="form-control" required placeholder="10-digit mobile number">
+                            </div>
+                            <div class="form-group">
+                                <label for="attendeeRoll">Roll Number / Student ID *</label>
+                                <input type="text" id="attendeeRoll" class="form-control" required placeholder="e.g. CS-2023-042">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="attendeeBranch">Branch / Department *</label>
+                                <input type="text" id="attendeeBranch" class="form-control" required placeholder="e.g. Computer Science">
+                            </div>
+                            <div class="form-group">
+                                <label for="attendeeCourse">Course / Degree *</label>
+                                <input type="text" id="attendeeCourse" class="form-control" required placeholder="e.g. B.Tech / M.Sc">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="collegeDetails">College / Department Details *</label>
+                            <input type="text" id="collegeDetails" class="form-control" required placeholder="e.g. Main Campus, Tech Block">
+                        </div>
+
+                        <div class="form-row" style="background: #f8fafc; padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 24px;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="bookingType">Pass Format</label>
+                                <select id="bookingType" class="form-control" onchange="handleTypeChange()">
+                                    <option value="Solo">Solo Attendee (1 Person)</option>
+                                    <option value="Group">Group Pass (Squad)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="groupSizeContainer" style="display: none; margin-bottom: 0;">
+                                <label for="groupSize">Total Group Size <span id="groupRangeHint" style="font-weight: 400; color: var(--text-muted);">(Min: 2, Max: 5)</span></label>
+                                <input type="number" id="groupSize" class="form-control" value="2" min="2" max="10">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block btn-lg" id="submitBtn">
+                            🎟️ Confirm & Generate Digital Pass
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 style="color: var(--success); display: flex; align-items: center; gap: 8px;">
+                    <span>🎉</span> Spot Confirmed!
+                </h3>
+            </div>
+            <div class="modal-body" style="text-align: center; padding: 32px 24px;">
+                <div style="font-size: 3.5rem; margin-bottom: 12px;">🎟️</div>
+                <h4 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 8px;" id="modalEventTitle">Event Title</h4>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">
+                    Your registration has been confirmed and spots have been allocated.
+                </p>
+                <div style="background: #f1f5f9; padding: 14px; border-radius: var(--radius-md); margin-bottom: 24px;">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Official Ticket Pass ID</div>
+                    <div style="font-size: 1.4rem; font-weight: 800; font-family: monospace; color: var(--primary);" id="modalTicketId">
+                        TKT-000000
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <a href="my_events.html" class="btn btn-primary">
+                        View Digital Pass & QR →
+                    </a>
+                    <a href="index.html" class="btn btn-secondary">
+                        Browse More Events
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/store.js"></script>
+    <script>
+        // Render Sidebar & Notification Widget
+        document.getElementById('sidebarElement').innerHTML = Store.renderSidebar('home');
+        document.getElementById('notifWidgetSlot').innerHTML = Store.renderTopBarNotificationWidget();
+
+        // Mobile Sidebar Toggle
+        const mobileBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.getElementById('sidebarElement');
+        if (mobileBtn) {
+            mobileBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+        }
+
+        // Parse Event Index from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventIndex = parseInt(urlParams.get('event'));
+        const events = Store.getApprovedEvents();
+
+        if (isNaN(eventIndex) || !events[eventIndex]) {
+            alert('Invalid event selected. Returning to campus catalog.');
+            window.location.href = 'index.html';
+        }
+
+        const eventData = events[eventIndex];
+        const minG = eventData.minGroupSize || 2;
+        const maxG = eventData.maxGroupSize || 5;
+
+        // Populate Event Banner
+        document.getElementById('eventTitle').textContent = eventData.title;
+        document.getElementById('eventDesc').textContent = eventData.description;
+        document.getElementById('eventSpots').textContent = eventData.spots;
+        document.getElementById('eventDate').textContent = `${eventData.startDate} ${eventData.endDate && eventData.endDate !== eventData.startDate ? 'to ' + eventData.endDate : ''}`;
+        document.getElementById('eventTime').textContent = eventData.time || 'TBD';
+        document.getElementById('eventVenue').textContent = eventData.venue || 'Campus Auditorium';
+        document.getElementById('eventOrganizer').textContent = eventData.organizer || 'Campus Society';
+
+        const badgeFormat = document.getElementById('badgeFormat');
+        const bookingTypeSelect = document.getElementById('bookingType');
+        const groupSizeContainer = document.getElementById('groupSizeContainer');
+        const groupSizeInput = document.getElementById('groupSize');
+        const groupRangeHint = document.getElementById('groupRangeHint');
+
+        if (eventData.eventType === 'Group') {
+            badgeFormat.textContent = `👥 Group Event (${minG}-${maxG} members)`;
+            badgeFormat.style.background = 'rgba(168, 85, 247, 0.3)';
+            bookingTypeSelect.value = 'Group';
+            bookingTypeSelect.disabled = true; // Fixed to group
+            groupSizeContainer.style.display = 'block';
+            groupSizeInput.min = minG;
+            groupSizeInput.max = maxG;
+            groupSizeInput.value = minG;
+            groupRangeHint.textContent = `(Min: ${minG}, Max: ${maxG})`;
+        } else {
+            badgeFormat.textContent = '👤 Solo Event';
+            bookingTypeSelect.value = 'Solo';
+            bookingTypeSelect.disabled = true;
+            groupSizeContainer.style.display = 'none';
+        }
+
+        // Prefill user details if logged in
+        const currentUser = Store.getCurrentUser();
+        if (currentUser) {
+            document.getElementById('attendeeName').value = currentUser.name || '';
+            document.getElementById('attendeeEmail').value = currentUser.email || '';
+            document.getElementById('attendeePhone').value = currentUser.phone || '';
+            document.getElementById('attendeeRoll').value = currentUser.roll || '';
+            document.getElementById('attendeeBranch').value = currentUser.branch || '';
+            document.getElementById('attendeeCourse').value = currentUser.course || '';
+            document.getElementById('collegeDetails').value = currentUser.college || 'Campus University';
+        }
+
+        function handleTypeChange() {
+            if (bookingTypeSelect.value === 'Group') {
+                groupSizeContainer.style.display = 'block';
+            } else {
+                groupSizeContainer.style.display = 'none';
+            }
+        }
+
+        function submitBooking(e) {
+            e.preventDefault();
+
+            let groupCount = 1;
+            if (eventData.eventType === 'Group' || bookingTypeSelect.value === 'Group') {
+                groupCount = parseInt(groupSizeInput.value);
+                if (groupCount < minG || groupCount > maxG) {
+                    Store.showToast(`Group size must be between ${minG} and ${maxG} members.`, 'error');
+                    return;
+                }
+            }
+
+            if (eventData.spots < groupCount) {
+                Store.showToast(`Sorry, only ${eventData.spots} spots remaining!`, 'error');
+                return;
+            }
+
+            const formData = {
+                name: document.getElementById('attendeeName').value.trim(),
+                email: document.getElementById('attendeeEmail').value.trim(),
+                phone: document.getElementById('attendeePhone').value.trim(),
+                rollNumber: document.getElementById('attendeeRoll').value.trim(),
+                branch: document.getElementById('attendeeBranch').value.trim(),
+                course: document.getElementById('attendeeCourse').value.trim(),
+                collegeDetails: document.getElementById('collegeDetails').value.trim(),
+                bookingType: eventData.eventType === 'Group' ? 'Group' : 'Solo',
+                groupSize: groupCount
+            };
+
+            const result = Store.bookEvent(eventIndex, formData);
+            if (!result.success) {
+                Store.showToast(result.message, 'error');
+                return;
+            }
+
+            // Show Confirmation Modal
+            document.getElementById('modalEventTitle').textContent = eventData.title;
+            document.getElementById('modalTicketId').textContent = result.ticketId;
+            document.getElementById('successModal').classList.add('active');
+        }
+    </script>
+</body>
+</html>

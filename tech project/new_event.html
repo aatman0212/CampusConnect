@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusConnect - Pitch a New Event</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .pitch-card {
+            background: #ffffff;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            padding: 36px;
+            box-shadow: var(--shadow-sm);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .pitch-header-box {
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .pitch-header-box h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .pitch-header-box p {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            margin-top: 4px;
+        }
+
+        .form-section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin: 24px 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Shared Sidebar -->
+    <aside class="sidebar" id="sidebarElement"></aside>
+
+    <div class="main-wrapper">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <button class="mobile-nav-toggle" id="mobileMenuBtn" aria-label="Toggle navigation">☰</button>
+                <div class="page-headline">
+                    <h1>Pitch an Event</h1>
+                    <p>Submit your club, hackathon, or cultural fest idea for campus approval</p>
+                </div>
+            </div>
+            <div class="top-bar-actions">
+                <div id="notifWidgetSlot"></div>
+                <a href="index.html" class="btn btn-secondary btn-sm">
+                    ← Back to Catalog
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="content-container">
+            <div class="pitch-card">
+                <div class="pitch-header-box">
+                    <h2>💡 Propose a New Campus Event</h2>
+                    <p>All pitches are sent directly to the Campus Events Board for safety, venue allocation, and schedule review.</p>
+                </div>
+
+                <form id="pitchForm" onsubmit="submitPitch(event)">
+                    <!-- Basic Info -->
+                    <div class="form-section-title">
+                        <span>1</span> Event Overview
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventTitle">Event Title *</label>
+                        <input type="text" id="eventTitle" class="form-control" required placeholder="e.g. NextGen Web & Cloud Hackathon 2026">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="eventCategory">Category *</label>
+                            <select id="eventCategory" class="form-control" required>
+                                <option value="tech">💻 Technology & Coding</option>
+                                <option value="cultural">🎭 Cultural & Arts</option>
+                                <option value="sports">⚽ Sports & Athletics</option>
+                                <option value="workshop">🛠️ Hands-on Workshop</option>
+                                <option value="gaming">🎮 Esports & Gaming</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="eventType">Format *</label>
+                            <select id="eventType" class="form-control" required onchange="toggleGroupFields()">
+                                <option value="Solo">Solo Event (Individual Participants)</option>
+                                <option value="Group">Group Event (Squads / Teams)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Group Settings -->
+                    <div id="groupSettingsBox" style="display: none; background: #f8fafc; padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 20px;">
+                        <div style="font-weight: 700; font-size: 0.9rem; margin-bottom: 12px; color: var(--text-main);">
+                            👥 Team Formation Settings
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="minGroupSize">Minimum Squad Members *</label>
+                                <input type="number" id="minGroupSize" class="form-control" value="2" min="2" max="20">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="maxGroupSize">Maximum Squad Members *</label>
+                                <input type="number" id="maxGroupSize" class="form-control" value="4" min="2" max="20">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventDescription">Event Description & Agenda *</label>
+                        <textarea id="eventDescription" class="form-control" rows="4" required placeholder="Describe the goal of the event, eligibility, prizes, and schedule breakdown..."></textarea>
+                    </div>
+
+                    <!-- Logistics & Venue -->
+                    <div class="form-section-title">
+                        <span>2</span> Date, Time & Venue
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="startDate">Start Date *</label>
+                            <input type="date" id="startDate" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="endDate">End Date *</label>
+                            <input type="date" id="endDate" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="eventTime">Start Time *</label>
+                            <input type="time" id="eventTime" class="form-control" required value="10:00">
+                        </div>
+                        <div class="form-group">
+                            <label for="eventVenue">Proposed Venue / Room *</label>
+                            <input type="text" id="eventVenue" class="form-control" required placeholder="e.g. Auditorium / Lab 3 / Football Ground">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventCapacity">Attendee Capacity Limit (Total Seats) *</label>
+                        <input type="number" id="eventCapacity" class="form-control" required min="5" max="1000" placeholder="e.g. 50">
+                        <div class="form-help">Maximum number of students that can RSVP.</div>
+                    </div>
+
+                    <!-- Organizer Info -->
+                    <div class="form-section-title">
+                        <span>3</span> Organizer Information
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="organizerName">Club / Student Organizer Name *</label>
+                            <input type="text" id="organizerName" class="form-control" required placeholder="e.g. Google Developer Student Club">
+                        </div>
+                        <div class="form-group">
+                            <label for="contactEmail">Official Contact Email *</label>
+                            <input type="email" id="contactEmail" class="form-control" required placeholder="club@campus.edu">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="organizerPhone">Contact Phone Number *</label>
+                        <input type="tel" id="organizerPhone" class="form-control" required placeholder="10-digit phone number">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 10px;">
+                        🚀 Submit Pitch for Review
+                    </button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal-overlay" id="pitchSuccessModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 style="color: var(--success); display: flex; align-items: center; gap: 8px;">
+                    <span>🎉</span> Pitch Submitted Successfully!
+                </h3>
+            </div>
+            <div class="modal-body" style="text-align: center; padding: 32px 24px;">
+                <div style="font-size: 3.5rem; margin-bottom: 12px;">📋</div>
+                <h4 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 8px;" id="modalPitchTitle">Your Event</h4>
+                <p style="color: var(--text-muted); margin-bottom: 24px;">
+                    Your proposal is now in the <strong>Admin Approval Queue</strong>. Once verified by the campus board, it will automatically go live on the homepage!
+                </p>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <a href="my_events.html" class="btn btn-primary">
+                        Track Status in My Events →
+                    </a>
+                    <a href="index.html" class="btn btn-secondary">
+                        Back to Homepage
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/store.js"></script>
+    <script>
+        // Render Sidebar & Notification Widget
+        document.getElementById('sidebarElement').innerHTML = Store.renderSidebar('pitch');
+        document.getElementById('notifWidgetSlot').innerHTML = Store.renderTopBarNotificationWidget();
+
+        // Mobile Sidebar Toggle
+        const mobileBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.getElementById('sidebarElement');
+        if (mobileBtn) {
+            mobileBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+        }
+
+        // Setup min date as today
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById('startDate').min = todayStr;
+        document.getElementById('endDate').min = todayStr;
+
+        document.getElementById('startDate').addEventListener('change', function() {
+            document.getElementById('endDate').min = this.value;
+            if (document.getElementById('endDate').value && document.getElementById('endDate').value < this.value) {
+                document.getElementById('endDate').value = this.value;
+            }
+        });
+
+        // Prefill organizer info if logged in
+        const currentUser = Store.getCurrentUser();
+        if (currentUser) {
+            document.getElementById('organizerName').value = currentUser.name || '';
+            document.getElementById('contactEmail').value = currentUser.email || '';
+            document.getElementById('organizerPhone').value = currentUser.phone || '';
+        }
+
+        function toggleGroupFields() {
+            const isGroup = document.getElementById('eventType').value === 'Group';
+            document.getElementById('groupSettingsBox').style.display = isGroup ? 'block' : 'none';
+        }
+
+        function submitPitch(e) {
+            e.preventDefault();
+
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            if (endDate < startDate) {
+                Store.showToast('End date cannot be earlier than start date.', 'error');
+                return;
+            }
+
+            const eventType = document.getElementById('eventType').value;
+            let minGroup = 1;
+            let maxGroup = 1;
+
+            if (eventType === 'Group') {
+                minGroup = parseInt(document.getElementById('minGroupSize').value);
+                maxGroup = parseInt(document.getElementById('maxGroupSize').value);
+
+                if (minGroup < 2) {
+                    Store.showToast('Minimum group size must be at least 2.', 'error');
+                    return;
+                }
+                if (maxGroup < minGroup) {
+                    Store.showToast('Maximum group size must be greater than or equal to minimum.', 'error');
+                    return;
+                }
+            }
+
+            const cap = parseInt(document.getElementById('eventCapacity').value);
+            if (cap < 5) {
+                Store.showToast('Capacity must be at least 5 spots.', 'error');
+                return;
+            }
+
+            // Convert 24hr time string to 12hr display
+            const timeRaw = document.getElementById('eventTime').value;
+            let [h, m] = timeRaw.split(':').map(Number);
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            const timeFormatted = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`;
+
+            const pitchData = {
+                title: document.getElementById('eventTitle').value.trim(),
+                category: document.getElementById('eventCategory').value,
+                description: document.getElementById('eventDescription').value.trim(),
+                eventType: eventType,
+                minGroupSize: minGroup,
+                maxGroupSize: maxGroup,
+                groupRange: eventType === 'Group' ? `${minGroup}-${maxGroup}` : '1-1',
+                startDate: startDate,
+                endDate: endDate,
+                time: timeFormatted,
+                venue: document.getElementById('eventVenue').value.trim(),
+                capacity: cap,
+                organizer: document.getElementById('organizerName').value.trim(),
+                contact: document.getElementById('contactEmail').value.trim(),
+                phone: document.getElementById('organizerPhone').value.trim()
+            };
+
+            const created = Store.pitchEvent(pitchData);
+
+            document.getElementById('modalPitchTitle').textContent = created.title;
+            document.getElementById('pitchSuccessModal').classList.add('active');
+        }
+    </script>
+</body>
+</html>

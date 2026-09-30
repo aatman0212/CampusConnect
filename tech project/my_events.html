@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusConnect - My Bookings & Events</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .tabs-header {
+            display: flex;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        @media print {
+            .sidebar, .top-bar, .tabs-header, .no-print {
+                display: none !important;
+            }
+            .main-wrapper {
+                margin-left: 0 !important;
+            }
+            .content-container {
+                padding: 0 !important;
+            }
+            .ticket-card {
+                box-shadow: none !important;
+                border: 1px solid #000 !important;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Shared Sidebar -->
+    <aside class="sidebar" id="sidebarElement"></aside>
+
+    <div class="main-wrapper">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <button class="mobile-nav-toggle" id="mobileMenuBtn" aria-label="Toggle navigation">☰</button>
+                <div class="page-headline">
+                    <h1>My Events & Passes</h1>
+                    <p>Manage your booked event tickets and check status of pitched events</p>
+                </div>
+            </div>
+            <div class="top-bar-actions">
+                <div id="notifWidgetSlot"></div>
+                <a href="index.html" class="btn btn-secondary btn-sm">
+                    ← Explore More Events
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="content-container">
+            <div class="tabs-header">
+                <button class="tab-btn active" id="tabBookings" onclick="switchDashboardTab('bookings')">
+                    🎟️ My Digital Tickets (<span id="ticketCountBadge">0</span>)
+                </button>
+                <button class="tab-btn" id="tabPitches" onclick="switchDashboardTab('pitches')">
+                    💡 My Pitched Events (<span id="pitchCountBadge">0</span>)
+                </button>
+            </div>
+
+            <!-- Tab 1: Digital Tickets -->
+            <section id="bookingsView">
+                <div id="ticketsList"></div>
+                <div id="noTicketsMessage" style="display: none; text-align: center; padding: 60px 20px; background: #fff; border-radius: var(--radius-lg); border: 1px dashed var(--border-color);">
+                    <div style="font-size: 3rem; margin-bottom: 12px;">🎟️</div>
+                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">No Event Passes Yet</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 20px;">You haven't reserved any event spots yet. Browse active events to get your digital pass!</p>
+                    <a href="index.html" class="btn btn-primary btn-sm">Discover Campus Events</a>
+                </div>
+            </section>
+
+            <!-- Tab 2: Pitched Events -->
+            <section id="pitchesView" style="display: none;">
+                <div id="pitchesList" class="events-grid"></div>
+                <div id="noPitchesMessage" style="display: none; text-align: center; padding: 60px 20px; background: #fff; border-radius: var(--radius-lg); border: 1px dashed var(--border-color);">
+                    <div style="font-size: 3rem; margin-bottom: 12px;">💡</div>
+                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">No Events Pitched Yet</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 20px;">Have an idea for a workshop, tournament, or student meetup? Pitch it to campus admins!</p>
+                    <a href="new_event.html" class="btn btn-primary btn-sm">+ Pitch a New Event</a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/store.js"></script>
+    <script>
+        document.getElementById('sidebarElement').innerHTML = Store.renderSidebar('my-events');
+        document.getElementById('notifWidgetSlot').innerHTML = Store.renderTopBarNotificationWidget();
+
+        const mobileBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.getElementById('sidebarElement');
+        if (mobileBtn) {
+            mobileBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+        }
+
+        const currentUser = Store.getCurrentUser();
+
+        function switchDashboardTab(tab) {
+            const bView = document.getElementById('bookingsView');
+            const pView = document.getElementById('pitchesView');
+            const bTab = document.getElementById('tabBookings');
+            const pTab = document.getElementById('tabPitches');
+
+            if (tab === 'bookings') {
+                bView.style.display = 'block';
+                pView.style.display = 'none';
+                bTab.classList.add('active');
+                pTab.classList.remove('active');
+            } else {
+                bView.style.display = 'none';
+                pView.style.display = 'block';
+                pTab.classList.add('active');
+                bTab.classList.remove('active');
+            }
+        }
+
+        function renderBookings() {
+            const bookings = Store.getUserBookings(currentUser ? currentUser.email : null);
+            const list = document.getElementById('ticketsList');
+            const emptyMsg = document.getElementById('noTicketsMessage');
+            document.getElementById('ticketCountBadge').textContent = bookings.length;
+
+            if (bookings.length === 0) {
+                list.innerHTML = '';
+                emptyMsg.style.display = 'block';
+                return;
+            }
+            emptyMsg.style.display = 'none';
+
+            list.innerHTML = bookings.map(b => `
+                <div class="ticket-card" id="ticket-${b.id}">
+                    <div class="ticket-header">
+                        <div>
+                            <div class="ticket-title">${b.eventTitle}</div>
+                            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 2px;">Campus Verified Event Pass</div>
+                        </div>
+                        <div class="ticket-badge">
+                            ${b.bookingType === 'Group' ? `👥 Group Pass (${b.groupSize} attendees)` : '👤 Solo Pass'}
+                        </div>
+                    </div>
+
+                    <div class="ticket-body">
+                        <div class="ticket-grid">
+                            <div>
+                                <div class="ticket-field-label">Attendee Name</div>
+                                <div class="ticket-field-val">${b.attendeeName}</div>
+                            </div>
+                            <div>
+                                <div class="ticket-field-label">Student ID / Roll</div>
+                                <div class="ticket-field-val">${b.rollNumber || 'N/A'}</div>
+                            </div>
+                            <div>
+                                <div class="ticket-field-label">Date & Time</div>
+                                <div class="ticket-field-val">📅 ${b.eventDate} | ⏰ ${b.eventTime}</div>
+                            </div>
+                            <div>
+                                <div class="ticket-field-label">Venue Location</div>
+                                <div class="ticket-field-val">📍 ${b.venue}</div>
+                            </div>
+                            <div>
+                                <div class="ticket-field-label">Contact Email</div>
+                                <div class="ticket-field-val">${b.attendeeEmail}</div>
+                            </div>
+                            <div>
+                                <div class="ticket-field-label">Registration Time</div>
+                                <div class="ticket-field-val">${new Date(b.bookedAt).toLocaleDateString()}</div>
+                            </div>
+                        </div>
+
+                        <div class="ticket-qr-side">
+                            <div class="mock-qr-code">
+                                <div class="qr-matrix-sim">
+                                    ■■■ ■ ■■■<br>
+                                    ■   ■   ■<br>
+                                    ■■■ ■■■ ■<br>
+                                    ■ ■   ■ ■<br>
+                                    ■■■ ■■■ ■■■
+                                </div>
+                            </div>
+                            <div class="ticket-id-tag">${b.id}</div>
+                            <div style="font-size: 0.68rem; color: var(--text-light); text-align: center; margin-top: 4px;">
+                                Scan at Gate Check-in
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ticket-footer no-print">
+                        <span style="font-size: 0.82rem; color: var(--text-muted);">
+                            Status: <strong style="color: var(--success);">● Confirmed & Active</strong>
+                        </span>
+                        <div style="display: flex; gap: 8px;">
+                            <a href="profile.html" class="btn btn-secondary btn-sm" title="View Certificate">
+                                📜 Certificate
+                            </a>
+                            <button onclick="window.print()" class="btn btn-secondary btn-sm">
+                                🖨️ Print Pass
+                            </button>
+                            <button onclick="handleCancelBooking('${b.id}', '${b.eventTitle}')" class="btn btn-danger btn-sm">
+                                Cancel Pass
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function handleCancelBooking(ticketId, eventTitle) {
+            if (confirm(`Are you sure you want to cancel your pass for "${eventTitle}"? Your spot will be released.`)) {
+                const res = Store.cancelBooking(ticketId);
+                if (res.success) {
+                    Store.showToast('Pass canceled and spot returned.', 'success');
+                    renderBookings();
+                } else {
+                    Store.showToast(res.message, 'error');
+                }
+            }
+        }
+
+        function renderPitches() {
+            const userEmail = currentUser ? currentUser.email.toLowerCase() : '';
+            const pendingEvents = Store.getPendingEvents();
+            const approvedEvents = Store.getApprovedEvents();
+            const rejectedEvents = JSON.parse(localStorage.getItem('cc_rejectedEvents')) || [];
+
+            const userPitches = [
+                ...pendingEvents.map(e => ({ ...e, displayStatus: 'pending' })),
+                ...approvedEvents.filter(e => e.creatorEmail && e.creatorEmail.toLowerCase() === userEmail).map(e => ({ ...e, displayStatus: 'approved' })),
+                ...rejectedEvents.filter(e => e.creatorEmail && e.creatorEmail.toLowerCase() === userEmail).map(e => ({ ...e, displayStatus: 'rejected' }))
+            ];
+
+            const list = document.getElementById('pitchesList');
+            const emptyMsg = document.getElementById('noPitchesMessage');
+            document.getElementById('pitchCountBadge').textContent = userPitches.length;
+
+            if (userPitches.length === 0) {
+                list.innerHTML = '';
+                emptyMsg.style.display = 'block';
+                return;
+            }
+            emptyMsg.style.display = 'none';
+
+            list.innerHTML = userPitches.map(e => `
+                <div class="event-card">
+                    <div class="card-header-visual ${e.category || 'tech'}">
+                        <span class="card-category-tag">${e.category || 'Pitch'}</span>
+                        <span class="badge ${e.displayStatus === 'approved' ? 'badge-success' : e.displayStatus === 'rejected' ? 'badge-danger' : 'badge-warning'}">
+                            ${e.displayStatus === 'approved' ? '✅ Approved' : e.displayStatus === 'rejected' ? '❌ Rejected' : '⏳ Pending Review'}
+                        </span>
+                    </div>
+
+                    <div class="card-body">
+                        <h3 class="card-title">${e.title}</h3>
+                        <p class="card-desc">${e.description}</p>
+
+                        <div class="card-meta-list">
+                            <div class="card-meta-item">
+                                <span class="icon">📅</span>
+                                <span>${e.startDate} to ${e.endDate}</span>
+                            </div>
+                            <div class="card-meta-item">
+                                <span class="icon">📍</span>
+                                <span>${e.venue || 'Campus Venue'}</span>
+                            </div>
+                            <div class="card-meta-item">
+                                <span class="icon">👥</span>
+                                <span>Format: ${e.eventType} (Cap: ${e.capacity})</span>
+                            </div>
+                            ${e.rejectionReason ? `
+                                <div style="margin-top: 6px; padding: 8px; background: var(--danger-light); color: var(--danger); border-radius: 6px; font-size: 0.8rem;">
+                                    <strong>Admin Feedback:</strong> ${e.rejectionReason}
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <div class="card-footer" style="margin-top: auto;">
+                            ${e.displayStatus === 'approved' 
+                                ? `<a href="index.html" class="btn btn-secondary btn-sm btn-block">View Live in Catalog →</a>`
+                                : `<span style="font-size: 0.8rem; color: var(--text-muted); text-align: center; width: 100%;">
+                                    Pitched on ${new Date(e.createdAt || Date.now()).toLocaleDateString()}
+                                   </span>`
+                            }
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        renderBookings();
+        renderPitches();
+    </script>
+</body>
+</html>

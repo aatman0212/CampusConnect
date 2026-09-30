@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusConnect - Discover Campus Events</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Shared Sidebar -->
+    <aside class="sidebar" id="sidebarElement"></aside>
+
+    <div class="main-wrapper">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <button class="mobile-nav-toggle" id="mobileMenuBtn" aria-label="Toggle navigation">☰</button>
+                <div class="page-headline">
+                    <h1>Campus Events</h1>
+                    <p>Explore, register, and form squads for university happenings</p>
+                </div>
+            </div>
+            <div class="top-bar-actions">
+                <div id="notifWidgetSlot"></div>
+                <a href="new_event.html" class="btn btn-primary btn-sm">
+                    <span>+</span> Pitch New Event
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="content-container">
+            <!-- Hero Banner -->
+            <section class="hero-banner">
+                <div class="hero-content">
+                    <span class="hero-tagline">Semester Fall 2026</span>
+                    <h2 class="hero-title">Experience the Best of Campus Culture & Tech</h2>
+                    <p class="hero-subtitle">
+                        Discover upcoming hackathons, sports leagues, cultural fests, and expert workshops. 
+                        RSVP instantly or team up with fellow students.
+                    </p>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <a href="#eventsSection" class="btn btn-secondary btn-sm" style="color: #1e3a8a;">
+                            Browse Events ↓
+                        </a>
+                        <a href="calendar.html" class="btn btn-sm" style="background: rgba(255,255,255,0.2); color: #fff;">
+                            📅 Calendar View
+                        </a>
+                        <a href="find_group.html" class="btn btn-sm" style="background: rgba(255,255,255,0.2); color: #fff;">
+                            👥 Teammate Finder
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Search & Filters -->
+            <section class="search-filter-section" id="eventsSection">
+                <div class="search-box-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-box-input" id="searchInput" placeholder="Search events by title, description, venue, or organizer...">
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                    <!-- Category Pills -->
+                    <div class="filter-pills" id="categoryFilters">
+                        <button class="filter-pill active" data-category="all">All Events</button>
+                        <button class="filter-pill" data-category="tech">💻 Tech & AI</button>
+                        <button class="filter-pill" data-category="cultural">🎭 Cultural & Music</button>
+                        <button class="filter-pill" data-category="sports">⚽ Sports</button>
+                        <button class="filter-pill" data-category="workshop">🛠️ Workshops</button>
+                        <button class="filter-pill" data-category="gaming">🎮 Gaming</button>
+                    </div>
+
+                    <!-- Type Filter -->
+                    <div style="display: flex; gap: 8px;">
+                        <select id="typeFilter" class="form-control" style="width: auto; padding: 7px 12px; font-size: 0.85rem;">
+                            <option value="all">All Formats</option>
+                            <option value="Solo">Solo Events</option>
+                            <option value="Group">Group Events</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Events Grid -->
+            <div id="eventsGrid" class="events-grid"></div>
+
+            <!-- Empty State -->
+            <div id="noEventsMessage" style="display: none; text-align: center; padding: 60px 20px; background: #fff; border-radius: var(--radius-lg); border: 1px dashed var(--border-color); margin-top: 20px;">
+                <div style="font-size: 3rem; margin-bottom: 12px;">🎪</div>
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">No events matching your search</h3>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">Try adjusting your keyword filter or browse another category.</p>
+                <button onclick="resetFilters()" class="btn btn-secondary btn-sm">Clear All Filters</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/store.js"></script>
+    <script>
+        document.getElementById('sidebarElement').innerHTML = Store.renderSidebar('home');
+        document.getElementById('notifWidgetSlot').innerHTML = Store.renderTopBarNotificationWidget();
+
+        const mobileBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.getElementById('sidebarElement');
+        if (mobileBtn) {
+            mobileBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+        }
+
+        let activeCategory = 'all';
+        let searchQuery = '';
+        let activeType = 'all';
+
+        function renderEvents() {
+            const events = Store.getApprovedEvents();
+            const grid = document.getElementById('eventsGrid');
+            const noMsg = document.getElementById('noEventsMessage');
+
+            const filtered = events.filter((evt, index) => {
+                const catMatch = (activeCategory === 'all') || (evt.category === activeCategory);
+                const typeMatch = (activeType === 'all') || (evt.eventType === activeType);
+                const q = searchQuery.toLowerCase();
+                const searchMatch = !q || 
+                    (evt.title && evt.title.toLowerCase().includes(q)) ||
+                    (evt.description && evt.description.toLowerCase().includes(q)) ||
+                    (evt.venue && evt.venue.toLowerCase().includes(q)) ||
+                    (evt.organizer && evt.organizer.toLowerCase().includes(q));
+
+                return catMatch && typeMatch && searchMatch;
+            });
+
+            grid.innerHTML = '';
+
+            if (filtered.length === 0) {
+                noMsg.style.display = 'block';
+                return;
+            }
+            noMsg.style.display = 'none';
+
+            filtered.forEach(event => {
+                const realIndex = events.indexOf(event);
+                const categoryClass = event.category || 'tech';
+                const spotsPercentage = Math.round(((event.capacity - event.spots) / event.capacity) * 100) || 0;
+                const isSoldOut = event.spots <= 0;
+
+                const card = document.createElement('div');
+                card.className = 'event-card';
+
+                card.innerHTML = `
+                    <div class="card-header-visual ${categoryClass}">
+                        <span class="card-category-tag">${event.category || 'Event'}</span>
+                        <span class="badge ${event.eventType === 'Group' ? 'badge-group' : 'badge-solo'}">
+                            ${event.eventType === 'Group' ? `👥 Group (${event.groupRange || '2-5'})` : '👤 Solo Entry'}
+                        </span>
+                    </div>
+
+                    <div class="card-body">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                            <h3 class="card-title" style="margin-bottom: 0;">${event.title}</h3>
+                            <a href="reviews.html" title="View Reviews" style="font-size: 0.8rem; font-weight: 700; color: #d97706; white-space: nowrap; margin-left: 8px;">
+                                ★ ${event.rating || '4.9'}
+                            </a>
+                        </div>
+                        <p class="card-desc">${event.description}</p>
+
+                        <div class="card-meta-list">
+                            <div class="card-meta-item">
+                                <span class="icon">📅</span>
+                                <span>${event.startDate} ${event.endDate && event.endDate !== event.startDate ? 'to ' + event.endDate : ''}</span>
+                            </div>
+                            <div class="card-meta-item">
+                                <span class="icon">⏰</span>
+                                <span>${event.time || 'Time TBD'}</span>
+                            </div>
+                            <div class="card-meta-item">
+                                <span class="icon">📍</span>
+                                <span>${event.venue || 'Campus Auditorium'}</span>
+                            </div>
+                            <div class="card-meta-item">
+                                <span class="icon">🏛️</span>
+                                <span>Organized by: <strong>${event.organizer}</strong></span>
+                            </div>
+                        </div>
+
+                        <div class="spots-progress-box">
+                            <div class="spots-text-row">
+                                <span style="color: ${event.spots <= 10 ? 'var(--danger)' : 'var(--text-main)'};">
+                                    ${isSoldOut ? '❌ Sold Out' : `🔥 ${event.spots} spots remaining`}
+                                </span>
+                                <span style="color: var(--text-muted); font-size: 0.72rem;">${event.capacity} total cap</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-bar-fill ${event.spots <= 10 ? 'warning' : ''}" style="width: ${spotsPercentage}%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            ${!isSoldOut 
+                                ? `<a href="book.html?event=${realIndex}" class="btn btn-primary btn-sm" style="flex: 1;">
+                                    🎟️ Book Spot
+                                   </a>`
+                                : `<button disabled class="btn btn-secondary btn-sm" style="flex: 1; opacity: 0.6; cursor: not-allowed;">
+                                    Event Full
+                                   </button>`
+                            }
+                            ${event.eventType === 'Group' 
+                                ? `<a href="find_group.html?event=${realIndex}" class="btn btn-secondary btn-sm" title="Find squad for this event">
+                                    👥 Squad
+                                   </a>`
+                                : ''
+                            }
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        document.getElementById('searchInput').addEventListener('input', function() {
+            searchQuery = this.value;
+            renderEvents();
+        });
+
+        document.querySelectorAll('#categoryFilters .filter-pill').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#categoryFilters .filter-pill').forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                activeCategory = this.dataset.category;
+                renderEvents();
+            });
+        });
+
+        document.getElementById('typeFilter').addEventListener('change', function() {
+            activeType = this.value;
+            renderEvents();
+        });
+
+        function resetFilters() {
+            searchQuery = '';
+            document.getElementById('searchInput').value = '';
+            activeCategory = 'all';
+            document.querySelectorAll('#categoryFilters .filter-pill').forEach(p => p.classList.remove('active'));
+            document.querySelector('#categoryFilters .filter-pill[data-category="all"]').classList.add('active');
+            activeType = 'all';
+            document.getElementById('typeFilter').value = 'all';
+            renderEvents();
+        }
+
+        renderEvents();
+    </script>
+</body>
+</html>

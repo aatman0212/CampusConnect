@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusConnect - Find & Form a Squad</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .group-card {
+            background: #ffffff;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            transition: var(--transition);
+        }
+
+        .group-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: #cbd5e1;
+        }
+
+        .member-avatar-list {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+
+        .member-pill {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 4px 12px;
+            border-radius: var(--radius-full);
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .member-pill.leader {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Shared Sidebar -->
+    <aside class="sidebar" id="sidebarElement"></aside>
+
+    <div class="main-wrapper">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <button class="mobile-nav-toggle" id="mobileMenuBtn" aria-label="Toggle navigation">☰</button>
+                <div class="page-headline">
+                    <h1>Squad & Teammate Matchmaker</h1>
+                    <p>Assemble your dream team with skill filters and in-squad coordination chat</p>
+                </div>
+            </div>
+            <div class="top-bar-actions">
+                <div id="notifWidgetSlot"></div>
+                <button onclick="openCreateGroupModal()" class="btn btn-primary btn-sm" id="createTeamBtnTop">
+                    + Form a Squad
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="content-container">
+            <!-- Event Picker Banner -->
+            <div style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow-sm);">
+                <div class="form-row" style="align-items: flex-end;">
+                    <div class="form-group" style="margin-bottom: 0; flex: 2;">
+                        <label for="eventSelect" style="font-weight: 700;">Select Group Event:</label>
+                        <select id="eventSelect" class="form-control" onchange="handleEventSelection()">
+                            <option value="">-- Choose an Event to View & Join Teams --</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 0; flex: 1;">
+                        <button onclick="openCreateGroupModal()" class="btn btn-primary btn-block" id="createGroupBtn">
+                            + Form New Squad
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Skill Filter Pills Bar -->
+                <div style="margin-top: 18px; padding-top: 16px; border-top: 1px solid #f1f5f9;">
+                    <div style="font-size: 0.78rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">
+                        🎯 Filter Squads by Needed Skill:
+                    </div>
+                    <div class="filter-pills" id="skillFilterPills">
+                        <button class="filter-pill active" data-skill="all">All Skills</button>
+                        <button class="filter-pill" data-skill="python">Python</button>
+                        <button class="filter-pill" data-skill="react">React / Frontend</button>
+                        <button class="filter-pill" data-skill="design">UI/UX Figma</button>
+                        <button class="filter-pill" data-skill="ml">AI / ML</button>
+                        <button class="filter-pill" data-skill="cloud">Cloud / DevOps</button>
+                    </div>
+                </div>
+
+                <div id="eventDetailsBanner" style="display: none; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <h3 id="selectedEventTitle" style="font-size: 1.15rem; font-weight: 700;"></h3>
+                        <p id="selectedEventMeta" style="font-size: 0.85rem; color: var(--text-muted);"></p>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <span class="badge badge-group" id="badgeAllowedSize">Team Size: --</span>
+                        <span class="badge badge-info" id="badgeEventSpots">Spots: --</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Squads Grid -->
+            <div class="events-grid" id="groupsList"></div>
+
+            <!-- Empty State -->
+            <div id="noGroupsMessage" style="text-align: center; padding: 60px 20px; background: #fff; border-radius: var(--radius-lg); border: 1px dashed var(--border-color);">
+                <div style="font-size: 3rem; margin-bottom: 12px;">👥</div>
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;" id="emptyTitle">Select a Group Event</h3>
+                <p style="color: var(--text-muted); margin-bottom: 20px;" id="emptyDesc">
+                    Choose any upcoming team event above to browse existing squads or create your own.
+                </p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create Squad Modal -->
+    <div class="modal-overlay" id="createSquadModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>👥 Form a New Squad</h3>
+                <span class="modal-close-btn" onclick="closeCreateModal()">&times;</span>
+            </div>
+            <form onsubmit="handleCreateSquad(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="squadEvent">Target Event</label>
+                        <select id="modalEventSelect" class="form-control" required></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="squadName">Squad / Team Name *</label>
+                        <input type="text" id="squadName" class="form-control" required placeholder="e.g. ByteBusters / CyberWolves">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="squadLeaderRole">Your Role / Specialty *</label>
+                        <input type="text" id="squadLeaderRole" class="form-control" required placeholder="e.g. Lead Developer / UI Designer / Team Captain">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="squadLookingFor">Who are you looking for? (include skill keywords) *</label>
+                        <textarea id="squadLookingFor" class="form-control" rows="3" required placeholder="e.g. Need 1 React developer and 1 UI/UX Figma designer!"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="squadContact">Team Contact Discord / WhatsApp / Email *</label>
+                        <input type="text" id="squadContact" class="form-control" required placeholder="e.g. Discord: alex#1234 or alex.rivera@campus.edu">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create & Publish Squad</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Join Squad Confirmation Modal -->
+    <div class="modal-overlay" id="joinSquadModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>🤝 Join Squad</h3>
+                <span class="modal-close-btn" onclick="closeJoinModal()">&times;</span>
+            </div>
+            <form onsubmit="confirmJoinSquad(event)">
+                <div class="modal-body">
+                    <p style="margin-bottom: 16px; color: var(--text-muted);">
+                        You are requesting to join squad <strong id="joinSquadTargetName" style="color: var(--primary);"></strong>.
+                    </p>
+
+                    <div class="form-group">
+                        <label for="joinMemberName">Your Full Name *</label>
+                        <input type="text" id="joinMemberName" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="joinMemberRoll">Roll Number / Student ID *</label>
+                        <input type="text" id="joinMemberRoll" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="joinMemberRole">Your Role in Team *</label>
+                        <input type="text" id="joinMemberRole" class="form-control" required placeholder="e.g. Backend Dev, Presentation Lead, Defender">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="joinMemberContact">Contact Number / Email *</label>
+                        <input type="text" id="joinMemberContact" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeJoinModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Confirm Join Squad</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Squad Chat Modal -->
+    <div class="modal-overlay" id="squadChatModal">
+        <div class="modal-card" style="max-width: 580px;">
+            <div class="modal-header">
+                <h3>💬 <span id="chatSquadTitle">Squad Chat</span></h3>
+                <span class="modal-close-btn" onclick="closeChatModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="squad-chat-container">
+                    <div class="squad-chat-messages" id="chatMessagesList"></div>
+                </div>
+
+                <form onsubmit="handleSendChatMessage(event)" style="display: flex; gap: 8px; margin-top: 14px;">
+                    <input type="text" id="chatInputMessage" class="form-control" placeholder="Type a message, meeting link, or update..." required>
+                    <button type="submit" class="btn btn-primary">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/store.js"></script>
+    <script>
+        document.getElementById('sidebarElement').innerHTML = Store.renderSidebar('group');
+        document.getElementById('notifWidgetSlot').innerHTML = Store.renderTopBarNotificationWidget();
+
+        const mobileBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.getElementById('sidebarElement');
+        if (mobileBtn) {
+            mobileBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+        }
+
+        const currentUser = Store.getCurrentUser();
+        let selectedEventIndex = null;
+        let selectedGroupIndex = null;
+        let activeSkillFilter = 'all';
+        let activeChatSquadName = null;
+
+        function getGroupStorageKey(eventTitle) {
+            return 'cc_teams_' + encodeURIComponent(eventTitle.trim());
+        }
+
+        function getEventTeams(eventTitle) {
+            const key = getGroupStorageKey(eventTitle);
+            const saved = localStorage.getItem(key);
+            if (saved) return JSON.parse(saved);
+
+            if (eventTitle.includes('HackCampus')) {
+                const seedTeams = [
+                    {
+                        name: 'Neural Ninjas',
+                        leader: 'Alex Rivera',
+                        leaderRole: 'Full Stack & RAG Lead',
+                        lookingFor: 'Seeking 1 UI/UX designer with Figma skills and Python knowledge!',
+                        contact: 'alex.rivera@campus.edu',
+                        members: [
+                            { name: 'Alex Rivera', role: 'Full Stack' },
+                            { name: 'Priya Sharma', role: 'Data Engineer' }
+                        ]
+                    },
+                    {
+                        name: 'CloudCrafters',
+                        leader: 'Marcus Vance',
+                        leaderRole: 'Cloud DevOps',
+                        lookingFor: 'Need 1 mobile developer and 1 prompt engineer with React.',
+                        contact: 'marcus@campus.edu',
+                        members: [
+                            { name: 'Marcus Vance', role: 'Cloud DevOps' }
+                        ]
+                    }
+                ];
+                localStorage.setItem(key, JSON.stringify(seedTeams));
+                return seedTeams;
+            }
+            return [];
+        }
+
+        function saveEventTeams(eventTitle, teams) {
+            localStorage.setItem(getGroupStorageKey(eventTitle), JSON.stringify(teams));
+        }
+
+        function populateEventSelect() {
+            const events = Store.getApprovedEvents();
+            const eventSelect = document.getElementById('eventSelect');
+            const modalSelect = document.getElementById('modalEventSelect');
+            eventSelect.innerHTML = '<option value="">-- Choose an Event to View & Join Teams --</option>';
+            modalSelect.innerHTML = '';
+
+            let groupCount = 0;
+            events.forEach((evt, idx) => {
+                if (evt.eventType === 'Group') {
+                    groupCount++;
+                    const opt = document.createElement('option');
+                    opt.value = idx;
+                    opt.textContent = `${evt.title} (${evt.minGroupSize || 2}-${evt.maxGroupSize || 5} members)`;
+                    eventSelect.appendChild(opt);
+
+                    const mOpt = document.createElement('option');
+                    mOpt.value = idx;
+                    mOpt.textContent = evt.title;
+                    modalSelect.appendChild(mOpt);
+                }
+            });
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryEvent = urlParams.get('event');
+            if (queryEvent !== null && events[queryEvent] && events[queryEvent].eventType === 'Group') {
+                eventSelect.value = queryEvent;
+                handleEventSelection();
+            } else if (groupCount > 0) {
+                eventSelect.selectedIndex = 1;
+                handleEventSelection();
+            }
+        }
+
+        function handleEventSelection() {
+            const eventSelect = document.getElementById('eventSelect');
+            const idx = eventSelect.value;
+            const events = Store.getApprovedEvents();
+            const banner = document.getElementById('eventDetailsBanner');
+
+            if (idx === "") {
+                selectedEventIndex = null;
+                banner.style.display = 'none';
+                renderGroups();
+                return;
+            }
+
+            selectedEventIndex = parseInt(idx);
+            const evt = events[selectedEventIndex];
+            banner.style.display = 'flex';
+            document.getElementById('selectedEventTitle').textContent = evt.title;
+            document.getElementById('selectedEventMeta').textContent = `📅 ${evt.startDate} | 📍 ${evt.venue || 'Auditorium'} | 🏛️ ${evt.organizer}`;
+            document.getElementById('badgeAllowedSize').textContent = `Squad Limit: ${evt.minGroupSize || 2} - ${evt.maxGroupSize || 5} members`;
+            document.getElementById('badgeEventSpots').textContent = `🔥 ${evt.spots} Event Spots Remaining`;
+
+            renderGroups();
+        }
+
+        // Skill filters
+        document.querySelectorAll('#skillFilterPills .filter-pill').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#skillFilterPills .filter-pill').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                activeSkillFilter = this.dataset.skill;
+                renderGroups();
+            });
+        });
+
+        function renderGroups() {
+            const grid = document.getElementById('groupsList');
+            const emptyMsg = document.getElementById('noGroupsMessage');
+            const emptyTitle = document.getElementById('emptyTitle');
+            const emptyDesc = document.getElementById('emptyDesc');
+
+            if (selectedEventIndex === null) {
+                grid.innerHTML = '';
+                emptyTitle.textContent = 'Select a Group Event';
+                emptyDesc.textContent = 'Choose any upcoming team event above to browse existing squads or create your own.';
+                emptyMsg.style.display = 'block';
+                return;
+            }
+
+            const events = Store.getApprovedEvents();
+            const evt = events[selectedEventIndex];
+            const maxMembers = evt.maxGroupSize || 5;
+            let teams = getEventTeams(evt.title);
+
+            // Filter by skill
+            if (activeSkillFilter !== 'all') {
+                const q = activeSkillFilter.toLowerCase();
+                teams = teams.filter(t => t.lookingFor.toLowerCase().includes(q) || t.leaderRole.toLowerCase().includes(q));
+            }
+
+            grid.innerHTML = '';
+
+            if (teams.length === 0) {
+                emptyTitle.textContent = 'No Matching Squads';
+                emptyDesc.textContent = activeSkillFilter !== 'all' 
+                    ? `No squads currently matching "${activeSkillFilter}". Try selecting "All Skills" or form your own!`
+                    : `Be the first to create a squad for "${evt.title}" and recruit teammates!`;
+                emptyMsg.style.display = 'block';
+                return;
+            }
+            emptyMsg.style.display = 'none';
+
+            teams.forEach((team, tIdx) => {
+                const isFull = team.members.length >= maxMembers;
+                const isUserInTeam = currentUser && team.members.some(m => m.name === currentUser.name);
+
+                const card = document.createElement('div');
+                card.className = 'group-card';
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-main);">${team.name}</h3>
+                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
+                                Created by <strong>${team.leader}</strong> (${team.leaderRole})
+                            </div>
+                        </div>
+                        <span class="badge ${isFull ? 'badge-danger' : 'badge-success'}">
+                            ${isFull ? 'Squad Full' : `Open (${team.members.length}/${maxMembers})`}
+                        </span>
+                    </div>
+
+                    <div style="background: #f8fafc; padding: 12px; border-radius: var(--radius-md); font-size: 0.88rem;">
+                        <strong style="color: var(--text-main);">Looking For:</strong>
+                        <div style="color: #475569; margin-top: 4px;">${team.lookingFor}</div>
+                    </div>
+
+                    <div>
+                        <div style="font-size: 0.78rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">
+                            Roster (${team.members.length}/${maxMembers} spots)
+                        </div>
+                        <div class="member-avatar-list">
+                            ${team.members.map((m, mIdx) => `
+                                <div class="member-pill ${mIdx === 0 ? 'leader' : ''}">
+                                    ${mIdx === 0 ? '👑' : '👤'} ${m.name} <span style="color: var(--text-muted); font-size: 0.72rem;">(${m.role})</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; color: var(--text-muted);">
+                        <span>📞 ${team.contact}</span>
+                        <button onclick="openSquadChat('${team.name.replace(/'/g, "\\'")}')" class="btn btn-secondary btn-sm" style="padding: 4px 10px;">
+                            💬 Squad Chat
+                        </button>
+                    </div>
+
+                    <div style="margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                        ${isUserInTeam 
+                            ? `<button disabled class="btn btn-secondary btn-sm btn-block" style="opacity: 0.7;">
+                                ✅ You are in this squad
+                               </button>`
+                            : !isFull
+                                ? `<button onclick="openJoinModal(${tIdx})" class="btn btn-primary btn-sm btn-block">
+                                    🤝 Request to Join Squad
+                                   </button>`
+                                : `<button disabled class="btn btn-secondary btn-sm btn-block" style="opacity: 0.5;">
+                                    Squad Full
+                                   </button>`
+                        }
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Squad Chat Modal
+        function openSquadChat(squadName) {
+            activeChatSquadName = squadName;
+            document.getElementById('chatSquadTitle').textContent = `Chat: ${squadName}`;
+            renderChatMessages();
+            document.getElementById('squadChatModal').classList.add('active');
+        }
+
+        function closeChatModal() {
+            document.getElementById('squadChatModal').classList.remove('active');
+        }
+
+        function renderChatMessages() {
+            const list = document.getElementById('chatMessagesList');
+            const messages = Store.getSquadMessages(activeChatSquadName);
+            const myName = currentUser ? currentUser.name : '';
+
+            if (messages.length === 0) {
+                list.innerHTML = `<div style="text-align: center; color: var(--text-muted); margin: auto;">No messages in this squad room yet. Send a note to coordinate!</div>`;
+                return;
+            }
+
+            list.innerHTML = messages.map(m => `
+                <div class="chat-bubble ${m.sender === myName ? 'mine' : ''}">
+                    <div class="sender">${m.sender} <span style="font-size: 0.68rem; color: var(--text-light); font-weight: 400;">(${m.time})</span></div>
+                    <div>${m.message}</div>
+                </div>
+            `).join('');
+
+            list.scrollTop = list.scrollHeight;
+        }
+
+        function handleSendChatMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chatInputMessage');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            const sender = currentUser ? currentUser.name : 'Student';
+            const role = currentUser ? currentUser.branch : 'Member';
+
+            Store.postSquadMessage(activeChatSquadName, sender, role, msg);
+            input.value = '';
+            renderChatMessages();
+        }
+
+        // Create Squad Modal
+        function openCreateGroupModal() {
+            if (selectedEventIndex !== null) {
+                document.getElementById('modalEventSelect').value = selectedEventIndex;
+            }
+            if (currentUser) {
+                document.getElementById('squadContact').value = currentUser.email || '';
+            }
+            document.getElementById('createSquadModal').classList.add('active');
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createSquadModal').classList.remove('active');
+        }
+
+        function handleCreateSquad(e) {
+            e.preventDefault();
+            const targetIndex = parseInt(document.getElementById('modalEventSelect').value);
+            const events = Store.getApprovedEvents();
+            const evt = events[targetIndex];
+
+            const newTeam = {
+                name: document.getElementById('squadName').value.trim(),
+                leader: currentUser ? currentUser.name : 'Student Lead',
+                leaderRole: document.getElementById('squadLeaderRole').value.trim(),
+                lookingFor: document.getElementById('squadLookingFor').value.trim(),
+                contact: document.getElementById('squadContact').value.trim(),
+                members: [
+                    {
+                        name: currentUser ? currentUser.name : 'Student Lead',
+                        role: document.getElementById('squadLeaderRole').value.trim()
+                    }
+                ]
+            };
+
+            const teams = getEventTeams(evt.title);
+            teams.push(newTeam);
+            saveEventTeams(evt.title, teams);
+
+            closeCreateModal();
+            Store.showToast(`Squad "${newTeam.name}" created!`, 'success');
+            
+            document.getElementById('eventSelect').value = targetIndex;
+            handleEventSelection();
+        }
+
+        // Join Squad Modal
+        function openJoinModal(teamIdx) {
+            selectedGroupIndex = teamIdx;
+            const events = Store.getApprovedEvents();
+            const evt = events[selectedEventIndex];
+            const teams = getEventTeams(evt.title);
+            const team = teams[teamIdx];
+
+            document.getElementById('joinSquadTargetName').textContent = team.name;
+
+            if (currentUser) {
+                document.getElementById('joinMemberName').value = currentUser.name || '';
+                document.getElementById('joinMemberRoll').value = currentUser.roll || '';
+                document.getElementById('joinMemberContact').value = currentUser.email || '';
+            }
+            document.getElementById('joinSquadModal').classList.add('active');
+        }
+
+        function closeJoinModal() {
+            document.getElementById('joinSquadModal').classList.remove('active');
+        }
+
+        function confirmJoinSquad(e) {
+            e.preventDefault();
+            const events = Store.getApprovedEvents();
+            const evt = events[selectedEventIndex];
+            const teams = getEventTeams(evt.title);
+            const team = teams[selectedGroupIndex];
+
+            const memberName = document.getElementById('joinMemberName').value.trim();
+            const memberRole = document.getElementById('joinMemberRole').value.trim();
+
+            team.members.push({
+                name: memberName,
+                role: memberRole
+            });
+
+            saveEventTeams(evt.title, teams);
+            closeJoinModal();
+            Store.showToast(`Joined squad "${team.name}" successfully!`, 'success');
+
+            const maxMembers = evt.maxGroupSize || 5;
+            if (team.members.length >= maxMembers) {
+                Store.showToast(`Squad is now full with ${maxMembers} members! Auto-booking tickets...`, 'info');
+                Store.bookEvent(selectedEventIndex, {
+                    name: team.leader,
+                    email: team.contact,
+                    phone: currentUser ? currentUser.phone : '9876543210',
+                    rollNumber: 'SQUAD-' + team.name.replace(/\s+/g, '-').toUpperCase(),
+                    branch: 'Squad Group',
+                    course: 'Team Pass',
+                    collegeDetails: 'Campus Events Squad',
+                    bookingType: 'Group',
+                    groupSize: team.members.length
+                });
+            }
+
+            renderGroups();
+        }
+
+        populateEventSelect();
+    </script>
+</body>
+</html>

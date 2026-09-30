@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusConnect - Gate Check-in & Ticket Scanner</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Shared Sidebar -->
+    <aside class="sidebar" id="sidebarElement"></aside>
+
+    <div class="main-wrapper">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <button class="mobile-nav-toggle" id="mobileMenuBtn" aria-label="Toggle navigation">☰</button>
+                <div class="page-headline">
+                    <h1>Gate Check-in Desk</h1>
+                    <p>Live QR & Ticket pass verification system for event staff and security</p>
+                </div>
+            </div>
+            <div class="top-bar-actions">
+                <div id="notifWidgetSlot"></div>
+                <span class="badge badge-success">● Gate Scanner Online</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="content-container">
+            <div class="scanner-desk-wrapper">
+                <!-- Attendance Meter Bar -->
+                <div class="attendance-gauge-box">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                        <div>
+                            <h3 style="font-size: 1.15rem; font-weight: 700;">Live Attendance Progress</h3>
+                            <div style="font-size: 0.82rem; color: var(--text-muted);">Verified check-ins across all ongoing campus venues</div>
+                        </div>
+                        <div style="font-size: 1.3rem; font-weight: 800; color: var(--primary);" id="checkInPercentage">0%</div>
+                    </div>
+                    <div class="progress-track" style="height: 10px;">
+                        <div class="progress-bar-fill" id="checkInProgressBar" style="width: 0%;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">
+                        <span>Checked In: <strong id="countCheckedIn">0</strong></span>
+                        <span>Total Registered: <strong id="countTotalBookings">0</strong></span>
+                    </div>
+                </div>
+
+                <!-- Scanner & Search Box -->
+                <div class="scanner-input-box">
+                    <div style="font-size: 3rem; margin-bottom: 8px;">📲</div>
+                    <h2 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 6px;">Scan or Enter Ticket ID</h2>
+                    <p style="color: var(--text-muted); font-size: 0.88rem; max-width: 480px; margin: 0 auto 20px;">
+                        Point barcode scanner at the student's digital pass or manually type their 6-digit Ticket code.
+                    </p>
+
+                    <form onsubmit="handleManualCheckIn(event)" style="max-width: 420px; margin: 0 auto;">
+                        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                            <input type="text" id="ticketInput" class="form-control" placeholder="e.g. TKT-829104" required style="font-family: monospace; font-size: 1.1rem; text-transform: uppercase; font-weight: 700; text-align: center;">
+                            <button type="submit" class="btn btn-primary">Verify</button>
+                        </div>
+                    </form>
+
+                    <!-- Quick Demo Sample Tickets -->
+                    <div style="margin-top: 14px; font-size: 0.8rem; color: var(--text-muted);">
+                        <span>Quick Test Codes:</span>
+                        <button type="button" onclick="setTestCode('TKT-829104')" class="btn btn-secondary btn-sm" style="margin-left: 6px; padding: 3px 8px; font-family: monospace;">TKT-829104</button>
+                    </div>
+
+                    <!-- Scanner Viewfinder Box -->
+                    <div class="scan-viewfinder" id="viewfinder">
+                        <div style="font-size: 0.85rem; color: var(--text-muted);">
+                            📷 Camera Viewfinder (Simulated Optical Scanner)
+                        </div>
+                        <div style="margin-top: 8px; font-size: 0.78rem; color: var(--primary); font-weight: 600;">
+                            Ready to detect high-contrast QR Matrix
+                        </div>
+                    </div>
+
+                    <!-- Live Validation Feedback Card -->
+                    <div id="scanResultCard" class="scan-result-card">
+                        <div id="resultStatusIcon" style="font-size: 2.5rem; margin-bottom: 8px;"></div>
+                        <h3 id="resultTitle" style="font-size: 1.25rem; font-weight: 800;"></h3>
+                        <p id="resultMsg" style="font-size: 0.9rem; margin-top: 4px;"></p>
+
+                        <div id="resultAttendeeDetails" style="display: none; background: #ffffff; border-radius: var(--radius-md); padding: 14px; margin-top: 14px; border: 1px solid var(--border-color); text-align: left; font-size: 0.88rem;">
+                            <div>👤 <strong>Attendee:</strong> <span id="resName"></span></div>
+                            <div>🎓 <strong>Roll / ID:</strong> <span id="resRoll"></span></div>
+                            <div>🎪 <strong>Event:</strong> <span id="resEvent"></span></div>
+                            <div>📍 <strong>Venue:</strong> <span id="resVenue"></span></div>
+                            <div>🎟️ <strong>Pass Format:</strong> <span id="resFormat"></span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Gate Check-in Activity Log -->
+                <div style="margin-top: 32px;">
+                    <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 14px;">Recent Gate Activity Log</h3>
+                    <div style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--border-color); overflow: hidden; box-shadow: var(--shadow-sm);">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+                            <thead style="background: #f8fafc; border-bottom: 1px solid var(--border-color); text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase;">
+                                <tr>
+                                    <th style="padding: 12px 16px;">Time</th>
+                                    <th style="padding: 12px 16px;">Pass ID</th>
+                                    <th style="padding: 12px 16px;">Student Name</th>
+                                    <th style="padding: 12px 16px;">Event</th>
+                                    <th style="padding: 12px 16px;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activityLogBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/store.js"></script>
+    <script>
+        document.getElementById('sidebarElement').innerHTML = Store.renderSidebar('checkin');
+        document.getElementById('notifWidgetSlot').innerHTML = Store.renderTopBarNotificationWidget();
+
+        const mobileBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.getElementById('sidebarElement');
+        if (mobileBtn) {
+            mobileBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+        }
+
+        const recentLogs = [];
+
+        function refreshAttendanceMeter() {
+            const bookings = Store.getBookings();
+            const checkins = Store.getCheckIns();
+            const total = bookings.length;
+            const checkedInCount = Object.keys(checkins).length;
+            const pct = total > 0 ? Math.round((checkedInCount / total) * 100) : 0;
+
+            document.getElementById('countTotalBookings').textContent = total;
+            document.getElementById('countCheckedIn').textContent = checkedInCount;
+            document.getElementById('checkInPercentage').textContent = `${pct}%`;
+            document.getElementById('checkInProgressBar').style.width = `${pct}%`;
+        }
+
+        function setTestCode(code) {
+            document.getElementById('ticketInput').value = code;
+        }
+
+        function handleManualCheckIn(e) {
+            e.preventDefault();
+            const code = document.getElementById('ticketInput').value.trim();
+            if (!code) return;
+
+            const res = Store.checkInTicket(code);
+            const card = document.getElementById('scanResultCard');
+            const icon = document.getElementById('resultStatusIcon');
+            const title = document.getElementById('resultTitle');
+            const msg = document.getElementById('resultMsg');
+            const details = document.getElementById('resultAttendeeDetails');
+
+            card.classList.remove('success', 'error');
+
+            if (res.success) {
+                card.classList.add('success');
+                icon.textContent = '✅';
+                title.textContent = 'ACCESS GRANTED';
+                title.style.color = 'var(--success)';
+                msg.textContent = `Check-in verified at ${res.time}! Welcome to the venue.`;
+
+                details.style.display = 'block';
+                document.getElementById('resName').textContent = res.booking.attendeeName;
+                document.getElementById('resRoll').textContent = res.booking.rollNumber;
+                document.getElementById('resEvent').textContent = res.booking.eventTitle;
+                document.getElementById('resVenue').textContent = res.booking.venue;
+                document.getElementById('resFormat').textContent = `${res.booking.bookingType} (${res.booking.groupSize} attendees)`;
+
+                recentLogs.unshift({
+                    time: res.time,
+                    id: res.booking.id,
+                    name: res.booking.attendeeName,
+                    event: res.booking.eventTitle,
+                    status: 'Granted'
+                });
+
+                Store.showToast(`Pass ${res.booking.id} verified!`, 'success');
+            } else if (res.alreadyCheckedIn) {
+                card.classList.add('error');
+                icon.textContent = '⚠️';
+                title.textContent = 'DUPLICATE ENTRY ALERT';
+                title.style.color = 'var(--danger)';
+                msg.textContent = `This pass was ALREADY verified at ${res.checkedInAt}. Check attendee badge.`;
+
+                details.style.display = 'block';
+                document.getElementById('resName').textContent = res.booking.attendeeName;
+                document.getElementById('resRoll').textContent = res.booking.rollNumber;
+                document.getElementById('resEvent').textContent = res.booking.eventTitle;
+                document.getElementById('resVenue').textContent = res.booking.venue;
+                document.getElementById('resFormat').textContent = `${res.booking.bookingType} Pass`;
+
+                recentLogs.unshift({
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    id: res.booking.id,
+                    name: res.booking.attendeeName,
+                    event: res.booking.eventTitle,
+                    status: 'Duplicate'
+                });
+
+                Store.showToast('Warning: Duplicate ticket entry!', 'error');
+            } else {
+                card.classList.add('error');
+                icon.textContent = '❌';
+                title.textContent = 'INVALID TICKET CODE';
+                title.style.color = 'var(--danger)';
+                msg.textContent = res.message;
+                details.style.display = 'none';
+
+                Store.showToast('Invalid ticket code.', 'error');
+            }
+
+            renderLogs();
+            refreshAttendanceMeter();
+            document.getElementById('ticketInput').value = '';
+        }
+
+        function renderLogs() {
+            const tbody = document.getElementById('activityLogBody');
+            if (recentLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 24px; color: var(--text-muted);">No scans recorded in this session yet.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = recentLogs.slice(0, 8).map(log => `
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 10px 16px; color: var(--text-muted); font-size: 0.8rem;">${log.time}</td>
+                    <td style="padding: 10px 16px; font-family: monospace; font-weight: 700;">${log.id}</td>
+                    <td style="padding: 10px 16px;"><strong>${log.name}</strong></td>
+                    <td style="padding: 10px 16px; color: #475569;">${log.event}</td>
+                    <td style="padding: 10px 16px;">
+                        <span class="badge ${log.status === 'Granted' ? 'badge-success' : 'badge-danger'}">
+                            ${log.status === 'Granted' ? 'Verified' : 'Duplicate'}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Initialize
+        refreshAttendanceMeter();
+        renderLogs();
+    </script>
+</body>
+</html>
