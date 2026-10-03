@@ -256,6 +256,9 @@
             document.querySelector('#categoryFilters .filter-pill[data-category="all"]').classList.add('active');
             activeType = 'all';
             document.getElementById('typeFilter').value = 'all';
+            renderEvents();
+        }
+
         renderEvents();
 
         // Render omnipresent CampusBot widget

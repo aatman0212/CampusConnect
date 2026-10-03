@@ -63,11 +63,16 @@ const Store = (function() {
 
   const CAMPUS_VENUES = [
     {
-      id: 'cs_complex',
+      id: 'venue-1',
+      aliasId: 'cs_complex',
       name: 'Turing Innovation & AI Complex',
       code: 'TECH-B4',
+      icon: '💻',
+      floor: 2,
       zone: 'North Tech Quad',
       capacity: 140,
+      currentOccupancy: 124,
+      liveEvent: 'HackCampus 2026: 24h AI Hackathon',
       activeEvent: 'HackCampus 2026: 24h AI Hackathon',
       activeEventId: 'evt-1',
       amenities: ['1 Gbps Fiber WiFi', 'Dual 4K Monitors', 'Hardware Sandbox', 'Free Coffee Bar'],
@@ -76,11 +81,16 @@ const Store = (function() {
       description: 'Ultra-modern 24-hour computing and maker laboratory equipped for intensive hackathons, robotics, and cloud sprints.'
     },
     {
-      id: 'auditorium',
+      id: 'venue-2',
+      aliasId: 'auditorium',
       name: 'Grand University Amphitheatre',
       code: 'CULT-MAIN',
+      icon: '🎭',
+      floor: 1,
       zone: 'Central Arts Green',
       capacity: 350,
+      currentOccupancy: 147,
+      liveEvent: null,
       activeEvent: 'Aura 2026: Annual Cultural Night & Battle of Bands',
       activeEventId: 'evt-2',
       amenities: ['Dolby Atmos Audio', 'Robotic Stage Lights', 'Acoustic Shell', 'Green Rooms'],
@@ -89,11 +99,16 @@ const Store = (function() {
       description: 'Open-air tiered amphitheatre designed for cultural fests, keynote lectures, and music concerts.'
     },
     {
-      id: 'sports_arena',
+      id: 'venue-3',
+      aliasId: 'sports_arena',
       name: 'University Athletics Field & Arena',
       code: 'SPRT-FLD',
+      icon: '⚽',
+      floor: 1,
       zone: 'South Sports Complex',
       capacity: 500,
+      currentOccupancy: 350,
+      liveEvent: null,
       activeEvent: 'Inter-Department 7-a-Side Football Tournament',
       activeEventId: 'evt-4',
       amenities: ['FIFA Turf Grass', 'Floodlights', 'Medical Support Bay', 'Live Digital Scoreboard'],
@@ -102,11 +117,16 @@ const Store = (function() {
       description: 'Official athletic grounds with multi-sport grass fields, locker rooms, and spectator bleachers.'
     },
     {
-      id: 'design_lab',
+      id: 'venue-4',
+      aliasId: 'design_lab',
       name: 'Design Studio & XR Media Lab',
       code: 'DSGN-2A',
+      icon: '🎨',
+      floor: 3,
       zone: 'Creative Block',
       capacity: 45,
+      currentOccupancy: 14,
+      liveEvent: null,
       activeEvent: 'Figma to Code: UI/UX Design Sprint',
       activeEventId: 'evt-5',
       amenities: ['Wacom Cintiq Displays', 'Apple Vision Pro / Quest 3', 'Color Calibrated Suites'],
@@ -115,11 +135,16 @@ const Store = (function() {
       description: 'Human-Computer Interaction creative studio dedicated to product design, prototyping, and frontend sprint sessions.'
     },
     {
-      id: 'gaming_lounge',
+      id: 'venue-5',
+      aliasId: 'gaming_lounge',
       name: 'Esports Arena & Cyber Center',
       code: 'GAME-CTR',
+      icon: '🎮',
+      floor: 1,
       zone: 'Student Activity Center',
       capacity: 75,
+      currentOccupancy: 64,
+      liveEvent: null,
       activeEvent: 'Campus Esports Showdown: Valorant 5v5',
       activeEventId: 'evt-6',
       amenities: ['240Hz Gaming Rigs', 'Live Shoutcast Deck', 'Twitch Streaming Studio', 'Snack Bar'],
@@ -128,11 +153,16 @@ const Store = (function() {
       description: 'Competitive esports arena optimized for LAN tournaments, multiplayer showcases, and streaming events.'
     },
     {
-      id: 'seminar_hall',
+      id: 'venue-6',
+      aliasId: 'seminar_hall',
       name: 'Computing Complex Lab 4',
       code: 'CS-L4',
+      icon: '🔬',
+      floor: 2,
       zone: 'Academic Wing B',
       capacity: 60,
+      currentOccupancy: 57,
+      liveEvent: null,
       activeEvent: 'Machine Learning & LLM Fine-Tuning Bootcamp',
       activeEventId: 'evt-3',
       amenities: ['NVIDIA GPU Cluster', 'Smart Laser Projectors', 'Recording Studio'],
@@ -542,7 +572,8 @@ const Store = (function() {
   }
 
   function getVenueById(id) {
-    return CAMPUS_VENUES.find(v => v.id === id) || null;
+    if (!id) return null;
+    return CAMPUS_VENUES.find(v => v.id === id || v.aliasId === id || v.code === id) || null;
   }
 
   // --- Events APIs ---
@@ -753,17 +784,18 @@ const Store = (function() {
 
   // --- AI Synergy & Team Matchmaking Engine ---
   function calculateSynergyScore(userSkills = [], lookingForText = '', currentSquadRoles = []) {
-    const normalizedUser = userSkills.map(s => s.toLowerCase());
-    const lookingLower = lookingForText.toLowerCase();
+    const userSkillsArr = Array.isArray(userSkills) ? userSkills : [];
+    const normalizedUser = userSkillsArr.map(s => String(s).toLowerCase().trim());
+    const lookingLower = (lookingForText || '').toLowerCase();
 
-    let score = 50; // Base score
+    let score = 55; // Base score
     const matchedSkills = [];
 
     const keyCategories = {
       frontend: ['react', 'vue', 'html', 'css', 'ui', 'ux', 'figma', 'frontend', 'tailwind'],
       backend: ['node', 'python', 'django', 'fastapi', 'sql', 'database', 'backend', 'api'],
       ai: ['pytorch', 'tensorflow', 'machine learning', 'llm', 'ml', 'nlp', 'data'],
-      devops: ['docker', 'aws', 'cloud', 'devops', 'kubernetes', 'linux'],
+      design: ['figma', 'ui', 'ux', 'design', 'adobe', 'wireframe', 'prototyping'],
       pitch: ['presentation', 'pitch', 'leadership', 'design', 'management']
     };
 
@@ -781,47 +813,56 @@ const Store = (function() {
     });
 
     score += userPillars * 5;
-    score = Math.min(98, Math.max(45, score));
+    score = Math.min(98, Math.max(50, score));
+
+    const breakdown = {
+      frontend: normalizedUser.some(s => keyCategories.frontend.includes(s)) ? 90 : 35,
+      backend: normalizedUser.some(s => keyCategories.backend.includes(s)) ? 85 : 30,
+      ai: normalizedUser.some(s => keyCategories.ai.includes(s)) ? 95 : 25,
+      design: normalizedUser.some(s => keyCategories.design.includes(s)) ? 88 : 40,
+      pitch: 75
+    };
+
+    const badge = score >= 90 ? '🌟 Elite Complement' : (score >= 75 ? '⚡ High Synergy' : '🤝 Solid Teammate');
 
     return {
       score,
+      badge,
       matchedSkills,
-      radarCoverage: {
-        frontend: normalizedUser.some(s => keyCategories.frontend.includes(s)) ? 90 : 35,
-        backend: normalizedUser.some(s => keyCategories.backend.includes(s)) ? 85 : 30,
-        ai: normalizedUser.some(s => keyCategories.ai.includes(s)) ? 95 : 20,
-        design: normalizedUser.some(s => keyCategories.frontend.includes(s)) ? 80 : 40,
-        pitch: 75
-      }
+      breakdown,
+      radarCoverage: breakdown
     };
   }
 
   // --- AI Pitch Co-Pilot & Academic Clash Radar ---
   function checkAcademicClashes(startDateStr, endDateStr) {
     const examWindows = [
-      { name: 'Midterm Examination Week', start: '2026-10-18', end: '2026-10-25' },
+      { name: 'Midterm Examination Week', start: '2026-10-14', end: '2026-10-22' },
       { name: 'Semester End Finals', start: '2026-11-20', end: '2026-12-05' }
     ];
 
+    const clashes = [];
     for (const win of examWindows) {
       if (
         (startDateStr >= win.start && startDateStr <= win.end) ||
-        (endDateStr >= win.start && endDateStr <= win.end)
+        (endDateStr >= win.start && endDateStr <= win.end) ||
+        (startDateStr <= win.start && endDateStr >= win.end)
       ) {
-        return {
-          clash: true,
-          level: 'High Risk',
+        clashes.push({
+          title: win.name,
           windowName: win.name,
+          start: win.start,
+          end: win.end,
+          level: 'High Risk',
           warning: `⚠️ Warning: Dates overlap with ${win.name} (${win.start} to ${win.end}). Expected attendance may drop by ~60%. Recommended to reschedule.`
-        };
+        });
       }
     }
 
-    return {
-      clash: false,
-      level: 'Safe',
-      warning: '✅ Academic Window Clear! No university exam or registration clashes detected.'
-    };
+    clashes.clash = clashes.length > 0;
+    clashes.level = clashes.length > 0 ? 'High Risk' : 'Safe';
+    clashes.warning = clashes.length > 0 ? clashes[0].warning : '✅ Academic Window Clear! No university exam or registration clashes detected.';
+    return clashes;
   }
 
   function generateAIPitchIdea(keyword, category) {
