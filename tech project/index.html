@@ -42,15 +42,22 @@
                         Discover upcoming hackathons, sports leagues, cultural fests, and expert workshops. 
                         RSVP instantly or team up with fellow students.
                     </p>
-                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                        <a href="#eventsSection" class="btn btn-secondary btn-sm" style="color: #1e3a8a;">
-                            Browse Events ↓
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <a href="live_hub.html" class="btn btn-danger btn-sm" style="box-shadow: 0 0 12px rgba(239,68,68,0.5);">
+                            <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#fff; animation: liveBadgePulse 1s infinite;"></span>
+                            🔴 Live Stage Hub
                         </a>
-                        <a href="calendar.html" class="btn btn-sm" style="background: rgba(255,255,255,0.2); color: #fff;">
-                            📅 Calendar View
+                        <a href="map.html" class="btn btn-sm" style="background: rgba(255,255,255,0.25); color: #fff; backdrop-filter: blur(4px);">
+                            🗺️ Spatial Campus Map
                         </a>
                         <a href="find_group.html" class="btn btn-sm" style="background: rgba(255,255,255,0.2); color: #fff;">
-                            👥 Teammate Finder
+                            👥 AI Squad Matcher
+                        </a>
+                        <a href="calendar.html" class="btn btn-sm" style="background: rgba(255,255,255,0.2); color: #fff;">
+                            📅 Calendar
+                        </a>
+                        <a href="profile.html" class="btn btn-sm" style="background: rgba(255,255,255,0.2); color: #fff;">
+                            💎 3D Pass
                         </a>
                     </div>
                 </div>
@@ -249,10 +256,12 @@
             document.querySelector('#categoryFilters .filter-pill[data-category="all"]').classList.add('active');
             activeType = 'all';
             document.getElementById('typeFilter').value = 'all';
-            renderEvents();
-        }
-
         renderEvents();
+
+        // Render omnipresent CampusBot widget
+        document.getElementById('campusBotSlot').innerHTML = Store.renderCampusBotFloating();
     </script>
+    <!-- Floating CampusBot AI Concierge -->
+    <div id="campusBotSlot"></div>
 </body>
 </html>

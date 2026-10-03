@@ -411,12 +411,23 @@
                 const isFull = team.members.length >= maxMembers;
                 const isUserInTeam = currentUser && team.members.some(m => m.name === currentUser.name);
 
+                // Compute AI Synergy Score
+                const mySkills = currentUser && currentUser.interests ? currentUser.interests : ['React', 'Python', 'AI'];
+                const synergy = Store.calculateSynergyScore(
+                    mySkills,
+                    team.lookingFor,
+                    team.members.map(m => m.role)
+                );
+
                 const card = document.createElement('div');
                 card.className = 'group-card';
                 card.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <div>
-                            <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-main);">${team.name}</h3>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-main);">${team.name}</h3>
+                                <span class="synergy-radar-badge">⚡ ${synergy.score}% AI Match</span>
+                            </div>
                             <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
                                 Created by <strong>${team.leader}</strong> (${team.leaderRole})
                             </div>
@@ -424,6 +435,44 @@
                         <span class="badge ${isFull ? 'badge-danger' : 'badge-success'}">
                             ${isFull ? 'Squad Full' : `Open (${team.members.length}/${maxMembers})`}
                         </span>
+                    </div>
+
+                    <!-- AI Synergy Radar Breakdown Box -->
+                    <div class="synergy-radar-container">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 0.74rem; font-weight: 800; text-transform: uppercase; color: #475569; letter-spacing: 0.05em;">
+                                🧠 AI Squad Skill Radar
+                            </span>
+                            <span style="font-size: 0.72rem; color: #10b981; font-weight: 700;">
+                                ${synergy.badge}
+                            </span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px;">
+                            <div class="radar-stat-row">
+                                <span>Frontend</span>
+                                <div class="radar-stat-track">
+                                    <div class="radar-stat-fill" style="width: ${synergy.breakdown.frontend}%;"></div>
+                                </div>
+                            </div>
+                            <div class="radar-stat-row">
+                                <span>Backend</span>
+                                <div class="radar-stat-track">
+                                    <div class="radar-stat-fill" style="width: ${synergy.breakdown.backend}%;"></div>
+                                </div>
+                            </div>
+                            <div class="radar-stat-row">
+                                <span>AI / ML</span>
+                                <div class="radar-stat-track">
+                                    <div class="radar-stat-fill" style="width: ${synergy.breakdown.ai}%;"></div>
+                                </div>
+                            </div>
+                            <div class="radar-stat-row">
+                                <span>Design / UX</span>
+                                <div class="radar-stat-track">
+                                    <div class="radar-stat-fill" style="width: ${synergy.breakdown.design}%;"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div style="background: #f8fafc; padding: 12px; border-radius: var(--radius-md); font-size: 0.88rem;">
@@ -623,6 +672,12 @@
         }
 
         populateEventSelect();
+
+        // Render omnipresent CampusBot widget
+        document.getElementById('campusBotSlot').innerHTML = Store.renderCampusBotFloating();
     </script>
+    <!-- Floating CampusBot AI Concierge -->
+    <div id="campusBotSlot"></div>
 </body>
 </html>
+

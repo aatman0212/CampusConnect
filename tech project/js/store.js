@@ -1,7 +1,13 @@
 /**
- * CampusConnect Central Data & Store Management (Enhanced)
- * Handles state persistence, mock data seeding, auth sessions, bookings,
- * group matching, squad chatrooms, notifications, event reviews, check-ins, and certificates.
+ * CampusConnect Central Data & Store Management (NextGen Flagship Edition)
+ * Features:
+ * - Persistent Store & State
+ * - Interactive Campus Venues & Spatial Map
+ * - AI Event Pitch Co-Pilot & Academic Clash Radar
+ * - AI Team Synergy Engine & Automatic Squad Matchmaker
+ * - Live Event Hub (Audience Q&A Upvotes, Project Showcase, Secret POAP Drops)
+ * - Holographic 3D Digital Credentials & LinkedIn Integration
+ * - CampusBot Natural Language AI Concierge
  */
 
 const Store = (function() {
@@ -14,7 +20,10 @@ const Store = (function() {
     NOTIFICATIONS: 'cc_notifications',
     REVIEWS: 'cc_reviews',
     SQUAD_CHATS: 'cc_squad_chats',
-    CHECKINS: 'cc_checkins'
+    CHECKINS: 'cc_checkins',
+    LIVE_QUESTIONS: 'cc_live_questions',
+    PROJECT_SHOWCASE: 'cc_project_showcase',
+    CLAIMED_DROPS: 'cc_claimed_drops'
   };
 
   const DEFAULT_USERS = [
@@ -31,7 +40,7 @@ const Store = (function() {
       role: 'student',
       bio: 'Junior CS student passionate about full-stack web development, LLMs, and open-source hackathons.',
       skills: ['Python', 'React', 'Node.js', 'PyTorch', 'UI/UX Design'],
-      badges: ['Hackathon Pioneer', 'Active Attendee', 'Squad Commander', 'Early Bird'],
+      badges: ['Hackathon Pioneer', 'Active Attendee', 'Squad Commander', 'Early Bird', 'AI Champion 2026'],
       password: 'password123'
     },
     {
@@ -52,6 +61,87 @@ const Store = (function() {
     }
   ];
 
+  const CAMPUS_VENUES = [
+    {
+      id: 'cs_complex',
+      name: 'Turing Innovation & AI Complex',
+      code: 'TECH-B4',
+      zone: 'North Tech Quad',
+      capacity: 140,
+      activeEvent: 'HackCampus 2026: 24h AI Hackathon',
+      activeEventId: 'evt-1',
+      amenities: ['1 Gbps Fiber WiFi', 'Dual 4K Monitors', 'Hardware Sandbox', 'Free Coffee Bar'],
+      status: 'live',
+      coords: { x: 28, y: 35 },
+      description: 'Ultra-modern 24-hour computing and maker laboratory equipped for intensive hackathons, robotics, and cloud sprints.'
+    },
+    {
+      id: 'auditorium',
+      name: 'Grand University Amphitheatre',
+      code: 'CULT-MAIN',
+      zone: 'Central Arts Green',
+      capacity: 350,
+      activeEvent: 'Aura 2026: Annual Cultural Night & Battle of Bands',
+      activeEventId: 'evt-2',
+      amenities: ['Dolby Atmos Audio', 'Robotic Stage Lights', 'Acoustic Shell', 'Green Rooms'],
+      status: 'upcoming',
+      coords: { x: 62, y: 40 },
+      description: 'Open-air tiered amphitheatre designed for cultural fests, keynote lectures, and music concerts.'
+    },
+    {
+      id: 'sports_arena',
+      name: 'University Athletics Field & Arena',
+      code: 'SPRT-FLD',
+      zone: 'South Sports Complex',
+      capacity: 500,
+      activeEvent: 'Inter-Department 7-a-Side Football Tournament',
+      activeEventId: 'evt-4',
+      amenities: ['FIFA Turf Grass', 'Floodlights', 'Medical Support Bay', 'Live Digital Scoreboard'],
+      status: 'upcoming',
+      coords: { x: 45, y: 78 },
+      description: 'Official athletic grounds with multi-sport grass fields, locker rooms, and spectator bleachers.'
+    },
+    {
+      id: 'design_lab',
+      name: 'Design Studio & XR Media Lab',
+      code: 'DSGN-2A',
+      zone: 'Creative Block',
+      capacity: 45,
+      activeEvent: 'Figma to Code: UI/UX Design Sprint',
+      activeEventId: 'evt-5',
+      amenities: ['Wacom Cintiq Displays', 'Apple Vision Pro / Quest 3', 'Color Calibrated Suites'],
+      status: 'open',
+      coords: { x: 75, y: 22 },
+      description: 'Human-Computer Interaction creative studio dedicated to product design, prototyping, and frontend sprint sessions.'
+    },
+    {
+      id: 'gaming_lounge',
+      name: 'Esports Arena & Cyber Center',
+      code: 'GAME-CTR',
+      zone: 'Student Activity Center',
+      capacity: 75,
+      activeEvent: 'Campus Esports Showdown: Valorant 5v5',
+      activeEventId: 'evt-6',
+      amenities: ['240Hz Gaming Rigs', 'Live Shoutcast Deck', 'Twitch Streaming Studio', 'Snack Bar'],
+      status: 'open',
+      coords: { x: 18, y: 70 },
+      description: 'Competitive esports arena optimized for LAN tournaments, multiplayer showcases, and streaming events.'
+    },
+    {
+      id: 'seminar_hall',
+      name: 'Computing Complex Lab 4',
+      code: 'CS-L4',
+      zone: 'Academic Wing B',
+      capacity: 60,
+      activeEvent: 'Machine Learning & LLM Fine-Tuning Bootcamp',
+      activeEventId: 'evt-3',
+      amenities: ['NVIDIA GPU Cluster', 'Smart Laser Projectors', 'Recording Studio'],
+      status: 'live',
+      coords: { x: 38, y: 20 },
+      description: 'Specialized deep learning training laboratory with high-memory GPU workstations.'
+    }
+  ];
+
   const DEFAULT_EVENTS = [
     {
       id: 'evt-1',
@@ -68,12 +158,15 @@ const Store = (function() {
       startDate: '2026-10-15',
       endDate: '2026-10-16',
       time: '10:00 AM',
-      venue: 'Main Auditorium & CS Labs',
+      venue: 'Turing Innovation & AI Complex',
+      venueId: 'cs_complex',
       capacity: 60,
       spots: 44,
       rating: 4.9,
       reviewCount: 28,
       status: 'approved',
+      isLiveNow: true,
+      liveStageEndTime: '2026-10-16T10:00:00Z',
       createdAt: '2026-09-20'
     },
     {
@@ -91,12 +184,14 @@ const Store = (function() {
       startDate: '2026-10-22',
       endDate: '2026-10-22',
       time: '05:30 PM',
-      venue: 'Open Air Amphitheatre',
+      venue: 'Grand University Amphitheatre',
+      venueId: 'auditorium',
       capacity: 150,
       spots: 98,
       rating: 4.8,
       reviewCount: 42,
       status: 'approved',
+      isLiveNow: false,
       createdAt: '2026-09-21'
     },
     {
@@ -115,11 +210,13 @@ const Store = (function() {
       endDate: '2026-10-09',
       time: '02:00 PM',
       venue: 'Computing Complex Lab 4',
+      venueId: 'seminar_hall',
       capacity: 45,
       spots: 14,
       rating: 5.0,
       reviewCount: 19,
       status: 'approved',
+      isLiveNow: false,
       createdAt: '2026-09-22'
     },
     {
@@ -137,12 +234,14 @@ const Store = (function() {
       startDate: '2026-10-28',
       endDate: '2026-10-30',
       time: '09:00 AM',
-      venue: 'University Main Sports Ground',
+      venue: 'University Athletics Field & Arena',
+      venueId: 'sports_arena',
       capacity: 80,
       spots: 35,
       rating: 4.7,
       reviewCount: 31,
       status: 'approved',
+      isLiveNow: false,
       createdAt: '2026-09-23'
     },
     {
@@ -160,12 +259,14 @@ const Store = (function() {
       startDate: '2026-10-12',
       endDate: '2026-10-12',
       time: '11:00 AM',
-      venue: 'Design Studio Lab B',
+      venue: 'Design Studio & XR Media Lab',
+      venueId: 'design_lab',
       capacity: 35,
       spots: 8,
       rating: 4.9,
       reviewCount: 15,
       status: 'approved',
+      isLiveNow: false,
       createdAt: '2026-09-24'
     },
     {
@@ -183,12 +284,14 @@ const Store = (function() {
       startDate: '2026-11-04',
       endDate: '2026-11-05',
       time: '01:00 PM',
-      venue: 'Student Gaming Lounge & Cyber Center',
+      venue: 'Esports Arena & Cyber Center',
+      venueId: 'gaming_lounge',
       capacity: 60,
       spots: 25,
       rating: 4.8,
       reviewCount: 37,
       status: 'approved',
+      isLiveNow: false,
       createdAt: '2026-09-25'
     }
   ];
@@ -212,12 +315,22 @@ const Store = (function() {
       venue: 'Robotics Mechanical Lab',
       capacity: 40,
       spots: 40,
+      rating: 5.0,
+      reviewCount: 0,
       status: 'pending',
       createdAt: '2026-09-28'
     }
   ];
 
   const DEFAULT_NOTIFICATIONS = [
+    {
+      id: 'notif-live',
+      title: '🔴 LIVE NOW: HackCampus 2026',
+      message: 'The 24h AI Hackathon is currently underway! Check out the Live Hub for Q&A, leaderboard, and badge drops.',
+      time: 'Live Now',
+      read: false,
+      link: 'live_hub.html'
+    },
     {
       id: 'notif-1',
       title: '🎟️ Pass Confirmed!',
@@ -233,14 +346,6 @@ const Store = (function() {
       time: '2 hours ago',
       read: false,
       link: 'find_group.html'
-    },
-    {
-      id: 'notif-3',
-      title: '🏆 Achievement Unlocked!',
-      message: 'You earned the "Hackathon Pioneer" campus profile badge.',
-      time: 'Yesterday',
-      read: true,
-      link: 'profile.html'
     }
   ];
 
@@ -274,30 +379,22 @@ const Store = (function() {
       comment: 'Super practical. We went from PyTorch fundamentals to deploying a fine-tuned LoRA model in 3 hours flat. Handouts and notebooks were top tier.',
       date: '2026-09-22',
       photoUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=600&q=80'
-    },
-    {
-      id: 'rev-4',
-      eventTitle: 'Inter-Department 7-a-Side Football Tournament',
-      reviewerName: 'Carlos Gomez',
-      reviewerBranch: 'Mechanical Eng.',
-      rating: 4,
-      comment: 'Intense tournament! The crowd support was insane during penalties. Well organized refereeing and medical staff on standby.',
-      date: '2026-09-20',
-      photoUrl: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80'
     }
   ];
 
-  const DEFAULT_SQUAD_CHATS = {
-    'Neural Ninjas': [
-      { sender: 'Alex Rivera', role: 'Team Lead', message: 'Hey squad! Let us meet tomorrow at 4 PM in Lab 3 to test our API endpoints.', time: '11:30 AM' },
-      { sender: 'Priya Sharma', role: 'Data Eng.', message: 'Sounds great! I finished data preprocessing for our fine-tuning set.', time: '11:35 AM' }
-    ],
-    'CloudCrafters': [
-      { sender: 'Marcus Vance', role: 'DevOps', message: 'AWS and Docker setup is ready. Still looking for 1 frontend teammate with React skills!', time: 'Yesterday' }
-    ]
-  };
+  const DEFAULT_LIVE_QUESTIONS = [
+    { id: 'q-1', author: 'Devon Lee', question: 'Will judges evaluate local model weights or API latency more heavily in the demo round?', upvotes: 24, answered: false },
+    { id: 'q-2', author: 'Rohan Mehta', question: 'Where can we access the high-memory GPU cluster credentials for the workshop?', upvotes: 18, answered: true },
+    { id: 'q-3', author: 'Sophia Chen', question: 'What is the exact deadline for GitHub commit freeze tonight?', upvotes: 31, answered: false }
+  ];
 
-  // Initialize store
+  const DEFAULT_PROJECTS = [
+    { id: 'proj-1', squadName: 'Neural Ninjas', title: 'CampusMind: On-Device Student Mental Health Assistant', tags: ['PyTorch', 'FastAPI', 'React'], votes: 47, repo: 'https://github.com/example/campusmind' },
+    { id: 'proj-2', squadName: 'CloudCrafters', title: 'EcoTrack: Smart IoT Waste Sorter for Campus Dining', tags: ['Computer Vision', 'YOLOv8', 'Node.js'], votes: 38, repo: 'https://github.com/example/ecotrack' },
+    { id: 'proj-3', squadName: 'Quantum Coders', title: 'DormMate: Matchmaking Algorithm for Campus Roommates', tags: ['Next.js', 'PostgreSQL', 'Tailwind'], votes: 29, repo: 'https://github.com/example/dormmate' }
+  ];
+
+  // Initialize Store
   function init() {
     if (!localStorage.getItem(STORAGE_KEYS.USERS)) {
       localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(DEFAULT_USERS));
@@ -314,14 +411,14 @@ const Store = (function() {
     if (!localStorage.getItem(STORAGE_KEYS.BOOKINGS)) {
       const sampleBooking = {
         id: 'TKT-829104',
-        eventId: 'evt-3',
-        eventTitle: 'Machine Learning & LLM Fine-Tuning Bootcamp',
-        eventDate: '2026-10-08',
-        eventTime: '02:00 PM',
-        venue: 'Computing Complex Lab 4',
-        eventType: 'Solo',
-        bookingType: 'Solo',
-        groupSize: 1,
+        eventId: 'evt-1',
+        eventTitle: 'HackCampus 2026: 24h AI Hackathon',
+        eventDate: '2026-10-15',
+        eventTime: '10:00 AM',
+        venue: 'Turing Innovation & AI Complex',
+        eventType: 'Group',
+        bookingType: 'Group',
+        groupSize: 2,
         attendeeName: 'Alex Rivera',
         attendeeEmail: 'alex.rivera@campus.edu',
         attendeePhone: '9876543210',
@@ -339,8 +436,14 @@ const Store = (function() {
     if (!localStorage.getItem(STORAGE_KEYS.REVIEWS)) {
       localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(DEFAULT_REVIEWS));
     }
-    if (!localStorage.getItem(STORAGE_KEYS.SQUAD_CHATS)) {
-      localStorage.setItem(STORAGE_KEYS.SQUAD_CHATS, JSON.stringify(DEFAULT_SQUAD_CHATS));
+    if (!localStorage.getItem(STORAGE_KEYS.LIVE_QUESTIONS)) {
+      localStorage.setItem(STORAGE_KEYS.LIVE_QUESTIONS, JSON.stringify(DEFAULT_LIVE_QUESTIONS));
+    }
+    if (!localStorage.getItem(STORAGE_KEYS.PROJECT_SHOWCASE)) {
+      localStorage.setItem(STORAGE_KEYS.PROJECT_SHOWCASE, JSON.stringify(DEFAULT_PROJECTS));
+    }
+    if (!localStorage.getItem(STORAGE_KEYS.CLAIMED_DROPS)) {
+      localStorage.setItem(STORAGE_KEYS.CLAIMED_DROPS, JSON.stringify(['CAMPUS-VIP']));
     }
     if (!localStorage.getItem(STORAGE_KEYS.CHECKINS)) {
       localStorage.setItem(STORAGE_KEYS.CHECKINS, JSON.stringify({}));
@@ -370,7 +473,6 @@ const Store = (function() {
     const merged = { ...user, ...updatedFields };
     setCurrentUser(merged);
 
-    // Also update in all users list
     const users = getUsers();
     const idx = users.findIndex(u => u.email === user.email);
     if (idx !== -1) {
@@ -406,8 +508,8 @@ const Store = (function() {
       college: userData.college || 'Campus University',
       role: userData.role || 'student',
       bio: 'Enthusiastic university student eager to participate in campus events.',
-      skills: ['Teamwork', 'Communication'],
-      badges: ['Campus Newcomer'],
+      skills: ['Teamwork', 'Communication', 'Python'],
+      badges: ['Campus Newcomer', 'Early Bird'],
       password: userData.password
     };
     users.push(newUser);
@@ -432,6 +534,15 @@ const Store = (function() {
   function logout() {
     localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
     window.location.href = 'login.html';
+  }
+
+  // --- Venue & Spatial Map APIs ---
+  function getCampusVenues() {
+    return CAMPUS_VENUES;
+  }
+
+  function getVenueById(id) {
+    return CAMPUS_VENUES.find(v => v.id === id) || null;
   }
 
   // --- Events APIs ---
@@ -477,6 +588,7 @@ const Store = (function() {
       endDate: eventData.endDate,
       time: eventData.time,
       venue: eventData.venue || 'Campus Venue TBD',
+      venueId: eventData.venueId || 'cs_complex',
       capacity: parseInt(eventData.capacity) || 30,
       spots: parseInt(eventData.capacity) || 30,
       rating: 5.0,
@@ -639,6 +751,238 @@ const Store = (function() {
     return bookings.filter(b => b.attendeeEmail.toLowerCase() === email.toLowerCase());
   }
 
+  // --- AI Synergy & Team Matchmaking Engine ---
+  function calculateSynergyScore(userSkills = [], lookingForText = '', currentSquadRoles = []) {
+    const normalizedUser = userSkills.map(s => s.toLowerCase());
+    const lookingLower = lookingForText.toLowerCase();
+
+    let score = 50; // Base score
+    const matchedSkills = [];
+
+    const keyCategories = {
+      frontend: ['react', 'vue', 'html', 'css', 'ui', 'ux', 'figma', 'frontend', 'tailwind'],
+      backend: ['node', 'python', 'django', 'fastapi', 'sql', 'database', 'backend', 'api'],
+      ai: ['pytorch', 'tensorflow', 'machine learning', 'llm', 'ml', 'nlp', 'data'],
+      devops: ['docker', 'aws', 'cloud', 'devops', 'kubernetes', 'linux'],
+      pitch: ['presentation', 'pitch', 'leadership', 'design', 'management']
+    };
+
+    normalizedUser.forEach(skill => {
+      if (lookingLower.includes(skill)) {
+        score += 15;
+        matchedSkills.push(skill);
+      }
+    });
+
+    // Bonus for complementary coverage
+    let userPillars = 0;
+    Object.values(keyCategories).forEach(cat => {
+      if (cat.some(k => normalizedUser.includes(k))) userPillars++;
+    });
+
+    score += userPillars * 5;
+    score = Math.min(98, Math.max(45, score));
+
+    return {
+      score,
+      matchedSkills,
+      radarCoverage: {
+        frontend: normalizedUser.some(s => keyCategories.frontend.includes(s)) ? 90 : 35,
+        backend: normalizedUser.some(s => keyCategories.backend.includes(s)) ? 85 : 30,
+        ai: normalizedUser.some(s => keyCategories.ai.includes(s)) ? 95 : 20,
+        design: normalizedUser.some(s => keyCategories.frontend.includes(s)) ? 80 : 40,
+        pitch: 75
+      }
+    };
+  }
+
+  // --- AI Pitch Co-Pilot & Academic Clash Radar ---
+  function checkAcademicClashes(startDateStr, endDateStr) {
+    const examWindows = [
+      { name: 'Midterm Examination Week', start: '2026-10-18', end: '2026-10-25' },
+      { name: 'Semester End Finals', start: '2026-11-20', end: '2026-12-05' }
+    ];
+
+    for (const win of examWindows) {
+      if (
+        (startDateStr >= win.start && startDateStr <= win.end) ||
+        (endDateStr >= win.start && endDateStr <= win.end)
+      ) {
+        return {
+          clash: true,
+          level: 'High Risk',
+          windowName: win.name,
+          warning: `⚠️ Warning: Dates overlap with ${win.name} (${win.start} to ${win.end}). Expected attendance may drop by ~60%. Recommended to reschedule.`
+        };
+      }
+    }
+
+    return {
+      clash: false,
+      level: 'Safe',
+      warning: '✅ Academic Window Clear! No university exam or registration clashes detected.'
+    };
+  }
+
+  function generateAIPitchIdea(keyword, category) {
+    const templates = {
+      tech: {
+        title: `${keyword ? keyword + ' ' : ''}NextGen HackSprint 2026`,
+        description: `A fast-paced university hackathon uniting students to architect innovative AI and cloud-native solutions. Includes hands-on mentoring sessions, midnight pizza drops, and prize tracks for beginner and advanced coders.`,
+        suggestedCapacity: 80,
+        time: '10:00 AM',
+        venue: 'Turing Innovation & AI Complex',
+        agenda: 'Hour 0-2: Team Formation & Keynote | Hour 2-18: Code Marathon | Hour 18-24: Pitching to Industry Judges'
+      },
+      cultural: {
+        title: `${keyword ? keyword + ' ' : ''}Campus Rhythm & Arts Fest`,
+        description: `An unforgettable campus evening celebrating indie musical acts, acoustic jams, digital art showcases, and student performance crews under the stars.`,
+        suggestedCapacity: 200,
+        time: '05:30 PM',
+        venue: 'Grand University Amphitheatre',
+        agenda: '05:30 PM: Stage Opener | 07:00 PM: Battle of Bands | 09:30 PM: DJ & Finale'
+      },
+      sports: {
+        title: `${keyword ? keyword + ' ' : ''}Inter-Department Championship Cup`,
+        description: `High-stakes knockout tournament featuring university departments competing for campus supremacy. Certified referees, hydration stations, and official streaming commentary.`,
+        suggestedCapacity: 120,
+        time: '09:00 AM',
+        venue: 'University Athletics Field & Arena',
+        agenda: '09:00 AM: Group Stage Knockouts | 02:00 PM: Semi-Finals | 04:30 PM: Trophy Match'
+      },
+      workshop: {
+        title: `${keyword ? keyword + ' ' : ''}Production Engineering Masterclass`,
+        description: `A hands-on, zero-to-one practical masterclass covering architecture best practices, real-world deployment pipelines, and live code reviews with senior engineering mentors.`,
+        suggestedCapacity: 50,
+        time: '02:00 PM',
+        venue: 'Computing Complex Lab 4',
+        agenda: 'Part 1: Core Fundamentals | Part 2: Hands-on Lab | Part 3: Architecture Q&A'
+      },
+      gaming: {
+        title: `${keyword ? keyword + ' ' : ''}Campus Esports Championship`,
+        description: `Double-elimination tournament streamed live on campus channels with custom graphics, caster deck, and hardware gear giveaways for finalists.`,
+        suggestedCapacity: 64,
+        time: '01:00 PM',
+        venue: 'Esports Arena & Cyber Center',
+        agenda: '01:00 PM: Bracket Check-in | 02:30 PM: Quarter-Finals | 06:00 PM: Grand Finals'
+      }
+    };
+
+    return templates[category] || templates.tech;
+  }
+
+  // --- Live Hub Second Screen APIs ---
+  function getLiveQuestions() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEYS.LIVE_QUESTIONS)) || [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function submitLiveQuestion(author, text) {
+    const list = getLiveQuestions();
+    const newQ = {
+      id: 'q-' + Date.now(),
+      author: author || 'Attendee',
+      question: text,
+      upvotes: 1,
+      answered: false
+    };
+    list.unshift(newQ);
+    localStorage.setItem(STORAGE_KEYS.LIVE_QUESTIONS, JSON.stringify(list));
+    return list;
+  }
+
+  function upvoteLiveQuestion(id) {
+    const list = getLiveQuestions();
+    const q = list.find(item => item.id === id);
+    if (q) {
+      q.upvotes++;
+      localStorage.setItem(STORAGE_KEYS.LIVE_QUESTIONS, JSON.stringify(list));
+    }
+    return list;
+  }
+
+  function getProjectShowcase() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEYS.PROJECT_SHOWCASE)) || [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function submitProject(data) {
+    const list = getProjectShowcase();
+    const newProj = {
+      id: 'proj-' + Date.now(),
+      squadName: data.squadName,
+      title: data.title,
+      tags: data.tags || ['Web', 'AI'],
+      votes: 1,
+      repo: data.repo || 'https://github.com'
+    };
+    list.unshift(newProj);
+    localStorage.setItem(STORAGE_KEYS.PROJECT_SHOWCASE, JSON.stringify(list));
+    return list;
+  }
+
+  function voteProject(id) {
+    const list = getProjectShowcase();
+    const proj = list.find(p => p.id === id);
+    if (proj) {
+      proj.votes++;
+      localStorage.setItem(STORAGE_KEYS.PROJECT_SHOWCASE, JSON.stringify(list));
+    }
+    return list;
+  }
+
+  function getClaimedDrops() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEYS.CLAIMED_DROPS)) || [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function claimSecretDrop(code) {
+    const validCodes = {
+      'HACK-AI-2026': { title: '🤖 AI Synthesizer 2026', rarity: 'Legendary', event: 'HackCampus 2026' },
+      'CULTURE-AURA': { title: '🎸 Indie Stage Rocker', rarity: 'Epic', event: 'Aura 2026' },
+      'CAMPUS-VIP': { title: '🌟 Campus Founding VIP', rarity: 'Rare', event: 'All-Access' },
+      'SPORTS-CHAMP': { title: '⚽ Golden Boot Striker', rarity: 'Epic', event: 'Football Cup' }
+    };
+
+    const clean = code.trim().toUpperCase();
+    if (!validCodes[clean]) {
+      return { success: false, message: 'Invalid or expired secret drop code.' };
+    }
+
+    const claimed = getClaimedDrops();
+    if (claimed.includes(clean)) {
+      return { success: false, message: 'You have already unlocked this mystery POAP badge!' };
+    }
+
+    claimed.push(clean);
+    localStorage.setItem(STORAGE_KEYS.CLAIMED_DROPS, JSON.stringify(claimed));
+
+    // Update current user badges
+    const user = getCurrentUser();
+    if (user) {
+      if (!user.badges) user.badges = [];
+      user.badges.push(validCodes[clean].title);
+      updateCurrentUserProfile({ badges: user.badges });
+    }
+
+    addNotification({
+      title: '🎁 Mystery Badge Unlocked!',
+      message: `You claimed the "${validCodes[clean].title}" (${validCodes[clean].rarity}) badge!`,
+      link: 'profile.html'
+    });
+
+    return { success: true, badge: validCodes[clean] };
+  }
+
   // --- Notifications APIs ---
   function getNotifications() {
     try {
@@ -695,7 +1039,6 @@ const Store = (function() {
     list.unshift(newRev);
     localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(list));
 
-    // Update event average rating
     const events = getApprovedEvents();
     const evt = events.find(e => e.title === reviewData.eventTitle);
     if (evt) {
@@ -787,6 +1130,150 @@ const Store = (function() {
     };
   }
 
+  // --- CampusBot Natural Language Assistant ---
+  function queryCampusBot(question) {
+    const q = question.toLowerCase();
+    const events = getApprovedEvents();
+    const user = getCurrentUser();
+
+    if (q.includes('live') || q.includes('now') || q.includes('ongoing')) {
+      const liveEvts = events.filter(e => e.isLiveNow);
+      if (liveEvts.length > 0) {
+        return {
+          answer: `🔥 **${liveEvts[0].title}** is currently LIVE at **${liveEvts[0].venue}**! Join the live Q&A, leaderboard, and badge drop in the Live Hub.`,
+          actionLink: 'live_hub.html',
+          actionText: 'Enter Live Hub →'
+        };
+      }
+      return { answer: 'No events are running live at this exact moment. Next up is HackCampus 2026!', actionLink: 'index.html', actionText: 'View Upcoming' };
+    }
+
+    if (q.includes('hackathon') || q.includes('coding') || q.includes('tech')) {
+      return {
+        answer: '💻 We have **HackCampus 2026: 24h AI Hackathon** happening at Turing Innovation Complex! Cash prizes and food covered.',
+        actionLink: 'book.html?event=0',
+        actionText: 'Reserve Hackathon Spot'
+      };
+    }
+
+    if (q.includes('map') || q.includes('venue') || q.includes('where')) {
+      return {
+        answer: '🗺️ You can explore the interactive 3D campus map with real-time room occupancy and directions.',
+        actionLink: 'map.html',
+        actionText: 'Open Campus Map'
+      };
+    }
+
+    if (q.includes('squad') || q.includes('team') || q.includes('teammate') || q.includes('partner')) {
+      return {
+        answer: '👥 Check out our **AI Synergy Matchmaker**! Squads like "Neural Ninjas" are currently looking for UI/UX and React teammates.',
+        actionLink: 'find_group.html',
+        actionText: 'Find Squads with AI Match'
+      };
+    }
+
+    if (q.includes('ticket') || q.includes('pass') || q.includes('my event')) {
+      const count = getUserBookings(user ? user.email : '').length;
+      return {
+        answer: `🎟️ You currently have **${count} active event passes** with scannable QR codes ready for gate entry.`,
+        actionLink: 'my_events.html',
+        actionText: 'View My Passes & QR'
+      };
+    }
+
+    if (q.includes('certificate') || q.includes('badge')) {
+      return {
+        answer: '🏆 You can view your verifiable digital credentials, holographic 3D badge, and export to LinkedIn on your profile page!',
+        actionLink: 'profile.html',
+        actionText: 'View Certificates'
+      };
+    }
+
+    return {
+      answer: `🎓 CampusConnect Assistant here! I can guide you to upcoming hackathons, campus venue maps, teammate matchmaking, or your digital passes. What would you like to explore?`,
+      actionLink: 'index.html',
+      actionText: 'Explore Catalog'
+    };
+  }
+
+  function renderCampusBotFloating() {
+    return `
+      <div id="campusBotWidget" class="campus-bot-container">
+        <button id="campusBotToggleBtn" class="campus-bot-orb" onclick="Store.toggleCampusBot()" title="Chat with CampusBot AI">
+          <span style="font-size: 1.5rem;">🤖</span>
+          <span class="pulse-ring"></span>
+        </button>
+        <div id="campusBotWindow" class="campus-bot-window">
+          <div class="campus-bot-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.4rem;">🤖</span>
+              <div>
+                <div style="font-weight: 700; font-size: 0.92rem;">CampusBot AI</div>
+                <div style="font-size: 0.72rem; color: #93c5fd;">Smart Campus Assistant</div>
+              </div>
+            </div>
+            <button onclick="Store.toggleCampusBot()" style="color: #ffffff; font-size: 1.2rem; cursor: pointer;">&times;</button>
+          </div>
+          <div class="campus-bot-messages" id="campusBotMessages">
+            <div class="bot-msg-bubble">
+              👋 Hey ${getCurrentUser() ? getCurrentUser().name.split(' ')[0] : 'there'}! I'm CampusBot. Ask me about live hackathons, campus venue directions, or finding a squad!
+            </div>
+          </div>
+          <div class="campus-bot-quick-prompts">
+            <button onclick="Store.quickPromptBot('What events are happening live?')">🔴 What's Live?</button>
+            <button onclick="Store.quickPromptBot('Find me a hackathon team')">👥 Find Squad</button>
+            <button onclick="Store.quickPromptBot('Where is the AI lab?')">📍 Campus Map</button>
+          </div>
+          <form class="campus-bot-input-row" onsubmit="Store.submitCampusBot(event)">
+            <input type="text" id="campusBotInput" placeholder="Ask CampusBot anything..." required autocomplete="off">
+            <button type="submit">➤</button>
+          </form>
+        </div>
+      </div>
+    `;
+  }
+
+  function toggleCampusBot() {
+    const win = document.getElementById('campusBotWindow');
+    if (win) win.classList.toggle('active');
+  }
+
+  function quickPromptBot(promptText) {
+    document.getElementById('campusBotInput').value = promptText;
+    submitCampusBot(new Event('submit'));
+  }
+
+  function submitCampusBot(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const input = document.getElementById('campusBotInput');
+    const msgContainer = document.getElementById('campusBotMessages');
+    const q = input.value.trim();
+    if (!q) return;
+
+    // Append user message
+    const userDiv = document.createElement('div');
+    userDiv.className = 'user-msg-bubble';
+    userDiv.textContent = q;
+    msgContainer.appendChild(userDiv);
+    input.value = '';
+
+    // Scroll
+    msgContainer.scrollTop = msgContainer.scrollHeight;
+
+    // Simulate AI thinking & reply
+    setTimeout(() => {
+      const res = queryCampusBot(q);
+      const botDiv = document.createElement('div');
+      botDiv.className = 'bot-msg-bubble';
+      botDiv.innerHTML = `
+        <div>${res.answer}</div>
+        ${res.actionLink ? `<a href="${res.actionLink}" class="bot-action-link">${res.actionText}</a>` : ''}
+      `;
+      msgContainer.appendChild(botDiv);
+      msgContainer.scrollTop = msgContainer.scrollHeight;
+    }, 300);
+  }
+
   // --- Reset to default ---
   function resetAllData() {
     localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(DEFAULT_USERS));
@@ -795,7 +1282,9 @@ const Store = (function() {
     localStorage.setItem(STORAGE_KEYS.PENDING_EVENTS, JSON.stringify(DEFAULT_PENDING_EVENTS));
     localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(DEFAULT_NOTIFICATIONS));
     localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(DEFAULT_REVIEWS));
-    localStorage.setItem(STORAGE_KEYS.SQUAD_CHATS, JSON.stringify(DEFAULT_SQUAD_CHATS));
+    localStorage.setItem(STORAGE_KEYS.LIVE_QUESTIONS, JSON.stringify(DEFAULT_LIVE_QUESTIONS));
+    localStorage.setItem(STORAGE_KEYS.PROJECT_SHOWCASE, JSON.stringify(DEFAULT_PROJECTS));
+    localStorage.setItem(STORAGE_KEYS.CLAIMED_DROPS, JSON.stringify(['CAMPUS-VIP']));
     localStorage.setItem(STORAGE_KEYS.CHECKINS, JSON.stringify({}));
   }
 
@@ -804,16 +1293,17 @@ const Store = (function() {
     const user = getCurrentUser();
     const isAdmin = user && user.role === 'admin';
     const pendingCount = getPendingEvents().length;
-    const unreadCount = getUnreadNotificationCount();
 
     const navItems = [
       { key: 'home', label: 'Explore Events', icon: '🎯', href: 'index.html' },
+      { key: 'live', label: 'Live Stage Hub', icon: '🔴', href: 'live_hub.html', badge: 'LIVE' },
+      { key: 'map', label: 'Campus Spatial Map', icon: '🗺️', href: 'map.html' },
       { key: 'calendar', label: 'Campus Calendar', icon: '📅', href: 'calendar.html' },
+      { key: 'group', label: 'AI Squad Matcher', icon: '👥', href: 'find_group.html' },
       { key: 'my-events', label: 'My Passes & Pitches', icon: '🎟️', href: 'my_events.html' },
-      { key: 'pitch', label: 'Pitch New Event', icon: '💡', href: 'new_event.html' },
-      { key: 'group', label: 'Find / Form Squad', icon: '👥', href: 'find_group.html' },
+      { key: 'pitch', label: 'Pitch with AI Co-Pilot', icon: '💡', href: 'new_event.html' },
       { key: 'reviews', label: 'Reviews & Gallery', icon: '⭐', href: 'reviews.html' },
-      { key: 'profile', label: 'My Student Profile', icon: '🎓', href: 'profile.html' }
+      { key: 'profile', label: 'Profile & Credentials', icon: '🏆', href: 'profile.html' }
     ];
 
     navItems.push({
@@ -837,7 +1327,7 @@ const Store = (function() {
       <a href="${item.href}" class="nav-link ${activeKey === item.key ? 'active' : ''}">
         <span class="icon">${item.icon}</span>
         <span>${item.label}</span>
-        ${item.badge ? `<span class="nav-badge danger">${item.badge}</span>` : ''}
+        ${item.badge ? `<span class="nav-badge ${item.badge === 'LIVE' ? 'live-pulsing' : 'danger'}">${item.badge}</span>` : ''}
       </a>
     `).join('');
 
@@ -953,7 +1443,6 @@ const Store = (function() {
     }, 3500);
   }
 
-  // Initialize immediately
   init();
 
   return {
@@ -964,6 +1453,8 @@ const Store = (function() {
     registerUser,
     loginUser,
     logout,
+    getCampusVenues,
+    getVenueById,
     getApprovedEvents,
     setApprovedEvents,
     getPendingEvents,
@@ -976,6 +1467,17 @@ const Store = (function() {
     bookEvent,
     cancelBooking,
     getUserBookings,
+    calculateSynergyScore,
+    checkAcademicClashes,
+    generateAIPitchIdea,
+    getLiveQuestions,
+    submitLiveQuestion,
+    upvoteLiveQuestion,
+    getProjectShowcase,
+    submitProject,
+    voteProject,
+    getClaimedDrops,
+    claimSecretDrop,
     getNotifications,
     addNotification,
     markAllNotificationsRead,
@@ -987,6 +1489,11 @@ const Store = (function() {
     postSquadMessage,
     getCheckIns,
     checkInTicket,
+    queryCampusBot,
+    renderCampusBotFloating,
+    toggleCampusBot,
+    quickPromptBot,
+    submitCampusBot,
     resetAllData,
     renderSidebar,
     renderTopBarNotificationWidget,

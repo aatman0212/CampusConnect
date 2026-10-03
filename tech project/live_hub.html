@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusConnect - Live Stage Hub & Second Screen</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Shared Sidebar -->
+    <aside class="sidebar" id="sidebarElement"></aside>
+
+    <div class="main-wrapper">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <button class="mobile-nav-toggle" id="mobileMenuBtn" aria-label="Toggle navigation">☰</button>
+                <div class="page-headline">
+                    <h1>Live Stage Hub</h1>
+                    <p>Real-time audience interaction, upvoted Q&A, and live project voting</p>
+                </div>
+            </div>
+            <div class="top-bar-actions">
+                <div id="notifWidgetSlot"></div>
+                <a href="map.html" class="btn btn-secondary btn-sm">🗺️ Venue Map</a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="content-container">
+            <!-- Live Stage Hero Banner -->
+            <div class="live-stage-hero">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; padding: 4px 12px; border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 700; color: #fca5a5; margin-bottom: 12px;">
+                            <span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444; animation: liveBadgePulse 1s infinite;"></span>
+                            BROADCASTING LIVE NOW • TURING INNOVATION COMPLEX
+                        </div>
+                        <h2 style="font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2;">
+                            HackCampus 2026: 24h AI Hackathon
+                        </h2>
+                        <p style="color: #cbd5e1; font-size: 0.95rem; margin-top: 6px; max-width: 600px;">
+                            Teams are currently hacking! Ask speakers questions in real time, cast your audience choice votes, and claim the secret drop POAP badge.
+                        </p>
+                    </div>
+
+                    <!-- Countdown Clock -->
+                    <div>
+                        <div style="font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 700; letter-spacing: 0.05em; text-align: right;">
+                            Hacking Ends In
+                        </div>
+                        <div class="live-countdown-grid">
+                            <div class="live-timer-unit">
+                                <div class="live-timer-num" id="timerHours">14</div>
+                                <div class="live-timer-label">Hours</div>
+                            </div>
+                            <div class="live-timer-unit">
+                                <div class="live-timer-num" id="timerMins">32</div>
+                                <div class="live-timer-label">Mins</div>
+                            </div>
+                            <div class="live-timer-unit">
+                                <div class="live-timer-num" id="timerSecs">45</div>
+                                <div class="live-timer-label">Secs</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two-Column Interactive Experience -->
+            <div class="live-hub-columns">
+                <!-- Column 1: Live Audience Q&A Stream -->
+                <div class="live-panel-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                        <div>
+                            <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-main);">🎤 Live Stage Q&A</h3>
+                            <p style="font-size: 0.78rem; color: var(--text-muted);">Upvote questions for the keynote speakers and judges</p>
+                        </div>
+                        <span class="badge badge-info" id="qaCountBadge">0 Questions</span>
+                    </div>
+
+                    <!-- Ask Question Form -->
+                    <form onsubmit="handleAskQuestion(event)" style="margin-bottom: 20px;">
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="liveQInput" class="form-control" placeholder="Ask judges or speakers a question..." required>
+                            <button type="submit" class="btn btn-primary btn-sm" style="white-space: nowrap;">Post Question</button>
+                        </div>
+                    </form>
+
+                    <!-- Questions List -->
+                    <div id="liveQuestionsList" style="display: flex; flex-direction: column; gap: 10px; max-height: 480px; overflow-y: auto;">
+                        <!-- Injected dynamically -->
+                    </div>
+                </div>
+
+                <!-- Column 2: Live Project Showcase & Voting -->
+                <div class="live-panel-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                        <div>
+                            <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-main);">🚀 Audience Choice Voting</h3>
+                            <p style="font-size: 0.78rem; color: var(--text-muted);">Vote for your favorite team demos live</p>
+                        </div>
+                        <button onclick="openSubmitProjectModal()" class="btn btn-secondary btn-sm">+ Submit Project</button>
+                    </div>
+
+                    <!-- Project Cards -->
+                    <div id="projectShowcaseList" style="display: flex; flex-direction: column; gap: 12px; max-height: 480px; overflow-y: auto;">
+                        <!-- Injected dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Secret POAP Mystery Drop Section -->
+            <div class="secret-poap-box">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <div style="font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.08em; color: #a5b4fc; font-weight: 700;">
+                            Live Attendance Secret Drop
+                        </div>
+                        <h3 style="font-size: 1.4rem; font-weight: 800; margin-top: 2px;">🎁 Claim Mystery POAP Badge</h3>
+                        <p style="font-size: 0.84rem; color: #cbd5e1; margin-top: 4px;">
+                            Announced during the live keynote! Hint: Try secret codes like <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #fcd34d;">HACK-AI-2026</code> or <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #fcd34d;">CULTURE-AURA</code>
+                        </p>
+                    </div>
+                    <form onsubmit="handleClaimCode(event)" style="display: flex; gap: 10px;">
+                        <input type="text" id="secretCodeInput" placeholder="Enter Drop Code..." style="padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.25); color: #fff; outline: none; font-weight: 600; text-transform: uppercase;">
+                        <button type="submit" class="btn btn-primary" style="background: #10b981; border: none; font-weight: 700;">Claim Badge</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Submit Project Modal -->
+    <div class="modal-overlay" id="submitProjectModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Submit Project to Live Showcase</h3>
+                <span class="modal-close-btn" onclick="closeSubmitProjectModal()">&times;</span>
+            </div>
+            <form onsubmit="handleSubmitProject(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Squad / Team Name</label>
+                        <input type="text" id="projSquad" class="form-control" placeholder="e.g. Neural Ninjas" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Project Title</label>
+                        <input type="text" id="projTitle" class="form-control" placeholder="e.g. CampusBot Autopilot" required>
+                    </div>
+                    <div class="form-group">
+                        <label>GitHub Repository / Demo Link</label>
+                        <input type="url" id="projRepo" class="form-control" placeholder="https://github.com/..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tech Stack Tags (Comma-separated)</label>
+                        <input type="text" id="projTags" class="form-control" placeholder="React, Python, Gemini AI, Tailwind">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeSubmitProjectModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit to Leaderboard</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Floating CampusBot Widget -->
+    <div id="campusBotSlot"></div>
+
+    <script src="js/store.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Render shared UI
+            document.getElementById('sidebarElement').innerHTML = Store.renderSidebar('live');
+            document.getElementById('notifWidgetSlot').innerHTML = Store.renderTopBarNotificationWidget();
+            document.getElementById('campusBotSlot').innerHTML = Store.renderCampusBotFloating();
+
+            // Mobile menu toggle
+            const mobileBtn = document.getElementById('mobileMenuBtn');
+            const sidebar = document.getElementById('sidebarElement');
+            if (mobileBtn && sidebar) {
+                mobileBtn.addEventListener('click', () => sidebar.classList.toggle('open'));
+            }
+
+            // Start countdown timer
+            startLiveTimer();
+
+            // Render live feeds
+            renderQuestions();
+            renderProjects();
+        });
+
+        // --- Countdown Timer Simulation ---
+        function startLiveTimer() {
+            let totalSeconds = 14 * 3600 + 32 * 60 + 45;
+            setInterval(() => {
+                if (totalSeconds <= 0) return;
+                totalSeconds--;
+                const h = Math.floor(totalSeconds / 3600);
+                const m = Math.floor((totalSeconds % 3600) / 60);
+                const s = totalSeconds % 60;
+                document.getElementById('timerHours').textContent = String(h).padStart(2, '0');
+                document.getElementById('timerMins').textContent = String(m).padStart(2, '0');
+                document.getElementById('timerSecs').textContent = String(s).padStart(2, '0');
+            }, 1000);
+        }
+
+        // --- Live Q&A Stream ---
+        function renderQuestions() {
+            const list = Store.getLiveQuestions();
+            const container = document.getElementById('liveQuestionsList');
+            const countBadge = document.getElementById('qaCountBadge');
+            if (countBadge) countBadge.textContent = `${list.length} Questions`;
+            if (!container) return;
+
+            if (list.length === 0) {
+                container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 24px;">No questions yet. Be the first to ask!</div>`;
+                return;
+            }
+
+            // Sort by upvotes descending
+            const sorted = [...list].sort((a, b) => b.upvotes - a.upvotes);
+
+            container.innerHTML = sorted.map(q => `
+                <div class="live-qa-item">
+                    <button class="qa-upvote-btn" onclick="handleUpvote('${q.id}')">
+                        <span style="font-size: 1rem; color: var(--primary);">▲</span>
+                        <span style="font-weight: 800; font-size: 0.85rem; color: var(--text-main);">${q.upvotes}</span>
+                    </button>
+                    <div style="flex: 1;">
+                        <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">
+                            ${q.author}
+                        </div>
+                        <div style="font-size: 0.9rem; color: var(--text-main); font-weight: 500;">
+                            ${q.question}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function handleAskQuestion(e) {
+            e.preventDefault();
+            const input = document.getElementById('liveQInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const currentUser = Store.getCurrentUser();
+            const author = currentUser ? currentUser.name : 'Live Hacker';
+            Store.submitLiveQuestion(author, text);
+            input.value = '';
+            renderQuestions();
+            Store.showToast('Question submitted to live stage Q&A!', 'success');
+        }
+
+        function handleUpvote(id) {
+            Store.upvoteLiveQuestion(id);
+            renderQuestions();
+        }
+
+        // --- Live Projects Showcase ---
+        function renderProjects() {
+            const list = Store.getProjectShowcase();
+            const container = document.getElementById('projectShowcaseList');
+            if (!container) return;
+
+            const sorted = [...list].sort((a, b) => b.votes - a.votes);
+
+            container.innerHTML = sorted.map((proj, idx) => `
+                <div class="project-vote-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 0.8rem; font-weight: 800; color: ${idx === 0 ? '#f59e0b' : '#64748b'};">
+                                    #${idx + 1}
+                                </span>
+                                <h4 style="font-size: 1rem; font-weight: 800; color: var(--text-main);">${proj.title}</h4>
+                            </div>
+                            <div style="font-size: 0.78rem; color: var(--primary); font-weight: 600; margin-top: 2px;">
+                                by Squad: ${proj.squadName}
+                            </div>
+                        </div>
+                        <button onclick="handleVoteProject('${proj.id}')" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 6px; font-weight: 700;">
+                            ❤️ ${proj.votes}
+                        </button>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
+                        ${(proj.tags || []).map(t => `<span style="font-size: 0.7rem; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-weight: 600; color: #475569;">${t}</span>`).join('')}
+                    </div>
+                    <div style="margin-top: 6px;">
+                        <a href="${proj.repo}" target="_blank" style="font-size: 0.75rem; color: var(--primary); text-decoration: underline;">
+                            View Source Code & Pitch Deck ↗
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function handleVoteProject(id) {
+            Store.voteProject(id);
+            renderProjects();
+            Store.showToast('Audience Choice vote recorded!', 'success');
+        }
+
+        function openSubmitProjectModal() {
+            document.getElementById('submitProjectModal').classList.add('active');
+        }
+
+        function closeSubmitProjectModal() {
+            document.getElementById('submitProjectModal').classList.remove('active');
+        }
+
+        function handleSubmitProject(e) {
+            e.preventDefault();
+            const squad = document.getElementById('projSquad').value.trim();
+            const title = document.getElementById('projTitle').value.trim();
+            const repo = document.getElementById('projRepo').value.trim();
+            const rawTags = document.getElementById('projTags').value.trim();
+            const tags = rawTags ? rawTags.split(',').map(t => t.trim()) : ['AI', 'Web'];
+
+            Store.submitProject({ squadName: squad, title, repo, tags });
+            closeSubmitProjectModal();
+            renderProjects();
+            Store.showToast('Project submitted to live showcase!', 'success');
+        }
+
+        // --- Secret POAP Claiming ---
+        function handleClaimCode(e) {
+            e.preventDefault();
+            const input = document.getElementById('secretCodeInput');
+            const code = input.value.trim();
+            if (!code) return;
+
+            const res = Store.claimSecretDrop(code);
+            if (res.success) {
+                Store.showToast(`🎉 Claimed "${res.badge.title}" (${res.badge.rarity})!`, 'success');
+                input.value = '';
+            } else {
+                Store.showToast(res.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

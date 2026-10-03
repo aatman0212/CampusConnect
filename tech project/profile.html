@@ -155,6 +155,59 @@
                 </div>
             </div>
 
+            <!-- 3D Holographic Interactive Credential Badge -->
+            <div style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 28px; margin-bottom: 28px; box-shadow: var(--shadow-sm);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+                    <div>
+                        <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                            <span>💎</span> 3D Holographic Credential Pass
+                        </h3>
+                        <p style="font-size: 0.84rem; color: var(--text-muted);">
+                            Interactive cryptographic digital ID. Hover over the badge to inspect dynamic light sheen, or export directly to LinkedIn.
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="exportToLinkedIn()" class="btn btn-primary btn-sm" style="background: #0a66c2; border: none; font-weight: 700;">
+                            🔗 Add to LinkedIn Profile
+                        </button>
+                    </div>
+                </div>
+
+                <div class="holo-stage" id="holoStage">
+                    <div class="holographic-badge" id="holoBadge">
+                        <div class="holo-watermark">CAMPUS</div>
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 1.4rem;">🎓</span>
+                                    <span style="font-weight: 800; letter-spacing: 0.08em; font-size: 0.8rem; text-transform: uppercase;">CampusConnect</span>
+                                </div>
+                                <div class="holo-chip"></div>
+                            </div>
+                            <div style="margin-top: 24px;">
+                                <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8;">Verified Student Scholar</div>
+                                <div style="font-size: 1.4rem; font-weight: 800; color: #ffffff; margin-top: 4px;" id="holoName">Alex Rivera</div>
+                                <div style="font-size: 0.8rem; color: #6ee7b7; margin-top: 2px;" id="holoMajor">Computer Science Major</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
+                                <div>
+                                    <div style="font-size: 0.68rem; color: #94a3b8; text-transform: uppercase;">Student ID / Roll</div>
+                                    <div style="font-size: 0.88rem; font-weight: 700; font-family: monospace;" id="holoRoll">CS-2023-042</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 0.68rem; color: #94a3b8; text-transform: uppercase;">Issued</div>
+                                    <div style="font-size: 0.88rem; font-weight: 700;">Academic 2026</div>
+                                </div>
+                            </div>
+                            <div class="holo-hash" id="holoHash">ID-9082-CRYPT-CAMPUS-VERIFIED</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Official Certificates Generator -->
             <div style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 24px; box-shadow: var(--shadow-sm);">
                 <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 6px;">Official Certificates of Participation</h3>
@@ -330,6 +383,47 @@
                     </button>
                 </div>
             `).join('');
+
+            // Populate 3D Holographic Card
+            const holoName = document.getElementById('holoName');
+            const holoMajor = document.getElementById('holoMajor');
+            const holoRoll = document.getElementById('holoRoll');
+            const holoHash = document.getElementById('holoHash');
+            if (holoName) holoName.textContent = user.name;
+            if (holoMajor) holoMajor.textContent = (user.branch || 'Computer Science') + ' Scholar';
+            if (holoRoll) holoRoll.textContent = user.roll || 'CS-2023-042';
+            if (holoHash) holoHash.textContent = `ID-${Math.abs((user.email || 'user').split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0))}-CRYPT-VERIFIED`;
+        }
+
+        // --- Interactive 3D Tilt Tracking for Holographic Badge ---
+        const holoStage = document.getElementById('holoStage');
+        const holoBadge = document.getElementById('holoBadge');
+
+        if (holoStage && holoBadge) {
+            holoStage.addEventListener('mousemove', (e) => {
+                const rect = holoStage.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                const rotateX = -(y / (rect.height / 2)) * 16;
+                const rotateY = (x / (rect.width / 2)) * 16;
+                holoBadge.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            });
+
+            holoStage.addEventListener('mouseleave', () => {
+                holoBadge.style.transform = `rotateX(0deg) rotateY(0deg)`;
+            });
+        }
+
+        // --- 1-Click LinkedIn Export ---
+        function exportToLinkedIn() {
+            const certName = encodeURIComponent('CampusConnect Verified Event & Leadership Credential');
+            const orgName = encodeURIComponent('CampusConnect University Affairs');
+            const issueYear = 2026;
+            const issueMonth = 10;
+            const certId = encodeURIComponent(user.roll ? user.roll : 'CC-STUDENT-2026');
+            const url = `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${certName}&organizationName=${orgName}&issueYear=${issueYear}&issueMonth=${issueMonth}&certId=${certId}`;
+            window.open(url, '_blank');
+            Store.showToast('Opening official LinkedIn Certification portal!', 'success');
         }
 
         // Edit Profile Modal
@@ -377,6 +471,11 @@
         }
 
         renderProfile();
+
+        // Render omnipresent CampusBot widget
+        document.getElementById('campusBotSlot').innerHTML = Store.renderCampusBotFloating();
     </script>
+    <!-- Floating CampusBot AI Concierge -->
+    <div id="campusBotSlot"></div>
 </body>
 </html>

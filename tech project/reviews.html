@@ -252,6 +252,11 @@
 
         populateEventDropdowns();
         renderReviews();
+
+        // Render omnipresent CampusBot widget
+        document.getElementById('campusBotSlot').innerHTML = Store.renderCampusBotFloating();
     </script>
+    <!-- Floating CampusBot AI Concierge -->
+    <div id="campusBotSlot"></div>
 </body>
 </html>

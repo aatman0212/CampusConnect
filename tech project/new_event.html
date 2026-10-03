@@ -81,6 +81,32 @@
                 </div>
 
                 <form id="pitchForm" onsubmit="submitPitch(event)">
+                    <!-- AI Pitch Co-Pilot Card -->
+                    <div class="ai-copilot-card">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 1.4rem;">✨</span>
+                                <div>
+                                    <strong style="color: #4338ca; font-size: 0.95rem;">AI Pitch Co-Pilot</strong>
+                                    <div style="font-size: 0.78rem; color: #6366f1;">Stuck on event ideas? Let Campus AI draft your pitch, agenda & venue recommendation.</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="aiTopicPrompt" placeholder="Theme / Topic (e.g. GenAI, Valorant, UX)" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-md); border: 1px solid #c7d2fe; outline: none;">
+                                <button type="button" onclick="runAICoPilot()" class="btn btn-primary btn-sm" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none;">
+                                    ⚡ Generate Pitch
+                                </button>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                            <span style="font-size: 0.72rem; color: #6366f1; font-weight: 600;">Quick Topics:</span>
+                            <button type="button" class="btn btn-sm" onclick="quickFillAIPrompt('Generative AI')" style="padding: 2px 8px; font-size: 0.72rem; background: #e0e7ff; color: #3730a3;">GenAI</button>
+                            <button type="button" class="btn btn-sm" onclick="quickFillAIPrompt('Autonomous Robotics')" style="padding: 2px 8px; font-size: 0.72rem; background: #e0e7ff; color: #3730a3;">Robotics</button>
+                            <button type="button" class="btn btn-sm" onclick="quickFillAIPrompt('Campus Indie Band')" style="padding: 2px 8px; font-size: 0.72rem; background: #e0e7ff; color: #3730a3;">Music Fest</button>
+                            <button type="button" class="btn btn-sm" onclick="quickFillAIPrompt('Valorant Masters')" style="padding: 2px 8px; font-size: 0.72rem; background: #e0e7ff; color: #3730a3;">Esports</button>
+                        </div>
+                    </div>
+
                     <!-- Basic Info -->
                     <div class="form-section-title">
                         <span>1</span> Event Overview
@@ -146,6 +172,15 @@
                         <div class="form-group">
                             <label for="endDate">End Date *</label>
                             <input type="date" id="endDate" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <!-- Academic Clash Radar Box -->
+                    <div id="academicClashBox" style="display: none;" class="clash-radar-alert">
+                        <span style="font-size: 1.4rem;">⚠️</span>
+                        <div>
+                            <strong id="clashTitle" style="font-size: 0.88rem;">Academic Calendar Clash Warning!</strong>
+                            <div id="clashDetails" style="font-size: 0.8rem; margin-top: 2px;"></div>
                         </div>
                     </div>
 
@@ -326,6 +361,54 @@
             document.getElementById('modalPitchTitle').textContent = created.title;
             document.getElementById('pitchSuccessModal').classList.add('active');
         }
+
+        // --- AI Pitch Co-Pilot Engine ---
+        function quickFillAIPrompt(topic) {
+            document.getElementById('aiTopicPrompt').value = topic;
+            runAICoPilot();
+        }
+
+        function runAICoPilot() {
+            const topic = document.getElementById('aiTopicPrompt').value.trim();
+            const cat = document.getElementById('eventCategory').value;
+            const idea = Store.generateAIPitchIdea(topic, cat);
+
+            document.getElementById('eventTitle').value = idea.title;
+            document.getElementById('eventDescription').value = `${idea.description}\n\nSchedule Agenda:\n${idea.agenda}`;
+            document.getElementById('eventCapacity').value = idea.suggestedCapacity;
+            document.getElementById('eventVenue').value = idea.venue;
+
+            Store.showToast('✨ AI Co-Pilot generated pitch template and venue allocation!', 'success');
+        }
+
+        // --- Academic Clash Radar Check ---
+        function checkClashes() {
+            const sDate = document.getElementById('startDate').value;
+            const eDate = document.getElementById('endDate').value || sDate;
+            const box = document.getElementById('academicClashBox');
+            const details = document.getElementById('clashDetails');
+
+            if (!sDate) {
+                box.style.display = 'none';
+                return;
+            }
+
+            const clashes = Store.checkAcademicClashes(sDate, eDate);
+            if (clashes.length > 0) {
+                box.style.display = 'flex';
+                details.innerHTML = clashes.map(c => `<strong>${c.title}</strong> (${c.start} to ${c.end}) - High risk of low student attendance!`).join('<br>');
+            } else {
+                box.style.display = 'none';
+            }
+        }
+
+        document.getElementById('startDate').addEventListener('change', checkClashes);
+        document.getElementById('endDate').addEventListener('change', checkClashes);
+
+        // Render omnipresent CampusBot widget
+        document.getElementById('campusBotSlot').innerHTML = Store.renderCampusBotFloating();
     </script>
+    <!-- Floating CampusBot AI Concierge -->
+    <div id="campusBotSlot"></div>
 </body>
 </html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusConnect - Interactive Spatial Map & Venue Navigator</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Shared Sidebar -->
+    <aside class="sidebar" id="sidebarElement"></aside>
+
+    <div class="main-wrapper">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <button class="mobile-nav-toggle" id="mobileMenuBtn" aria-label="Toggle navigation">☰</button>
+                <div class="page-headline">
+                    <h1>Campus Spatial Map</h1>
+                    <p>Live venue occupancy, 3D floor plan navigator & interactive pathfinding</p>
+                </div>
+            </div>
+            <div class="top-bar-actions">
+                <div id="notifWidgetSlot"></div>
+                <a href="live_hub.html" class="btn btn-danger btn-sm" style="box-shadow: 0 0 10px rgba(239,68,68,0.4);">
+                    <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#fff; animation: liveBadgePulse 1s infinite;"></span>
+                    Live Stage Hub
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="content-container">
+            <!-- Map Stats Header -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                <div style="background: #ffffff; border-radius: var(--radius-md); border: 1px solid var(--border-color); padding: 16px; display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">🏛️</div>
+                    <div>
+                        <div style="font-size: 1.3rem; font-weight: 800; color: var(--text-main);">6 Zones</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Monitored Campus Hubs</div>
+                    </div>
+                </div>
+                <div style="background: #ffffff; border-radius: var(--radius-md); border: 1px solid var(--border-color); padding: 16px; display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: #fef2f2; color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">🔴</div>
+                    <div>
+                        <div style="font-size: 1.3rem; font-weight: 800; color: #ef4444;">1 Venue Live</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Turing AI Complex (88% Full)</div>
+                    </div>
+                </div>
+                <div style="background: #ffffff; border-radius: var(--radius-md); border: 1px solid var(--border-color); padding: 16px; display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: #ecfdf5; color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">⚡</div>
+                    <div>
+                        <div style="font-size: 1.3rem; font-weight: 800; color: var(--text-main);">3,010 Seats</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Total Campus Event Capacity</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spatial Map Visual Canvas -->
+            <div class="campus-map-wrapper">
+                <div class="campus-map-grid-bg"></div>
+                
+                <div class="campus-map-header">
+                    <div>
+                        <div style="font-size: 1.15rem; font-weight: 800; color: #ffffff;">Interactive Digital Twin Campus</div>
+                        <div style="font-size: 0.78rem; color: #94a3b8;">Select any venue node below to inspect real-time IoT occupancy and navigation</div>
+                    </div>
+                    <div class="map-status-live">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 8px #ef4444;"></span>
+                        Live Radar Active
+                    </div>
+                </div>
+
+                <!-- Grid of Interactive Nodes -->
+                <div class="map-canvas-container" id="mapCanvasGrid">
+                    <!-- Injected dynamically via JS -->
+                </div>
+            </div>
+
+            <!-- Selected Venue Inspection & Pathfinding Drawer -->
+            <div id="venueDetailDrawer" class="venue-drawer-card" style="display: none;">
+                <div id="venueDrawerContent" style="width: 100%;">
+                    <!-- Injected dynamically -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Floating CampusBot Widget -->
+    <div id="campusBotSlot"></div>
+
+    <script src="js/store.js"></script>
+    <script>
+        let selectedVenueId = 'venue-1';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Render shared UI
+            document.getElementById('sidebarElement').innerHTML = Store.renderSidebar('map');
+            document.getElementById('notifWidgetSlot').innerHTML = Store.renderTopBarNotificationWidget();
+            document.getElementById('campusBotSlot').innerHTML = Store.renderCampusBotFloating();
+
+            // Mobile menu toggle
+            const mobileBtn = document.getElementById('mobileMenuBtn');
+            const sidebar = document.getElementById('sidebarElement');
+            if (mobileBtn && sidebar) {
+                mobileBtn.addEventListener('click', () => sidebar.classList.toggle('open'));
+            }
+
+            renderMapNodes();
+            selectVenue('venue-1');
+        });
+
+        function renderMapNodes() {
+            const venues = Store.getCampusVenues();
+            const container = document.getElementById('mapCanvasGrid');
+            if (!container) return;
+
+            container.innerHTML = venues.map(venue => {
+                const isLive = venue.liveEvent !== null;
+                const occPercent = Math.round((venue.currentOccupancy / venue.capacity) * 100);
+                const pillClass = occPercent >= 80 ? 'high' : (occPercent >= 40 ? 'medium' : 'low');
+
+                return `
+                    <div class="map-venue-node ${venue.id === selectedVenueId ? 'active' : ''} ${isLive ? 'live-active' : ''}" 
+                         onclick="selectVenue('${venue.id}')" id="node-${venue.id}">
+                        <div class="venue-node-top">
+                            <div class="venue-icon-circle">${venue.icon}</div>
+                            <span class="venue-occupancy-pill ${pillClass}">
+                                ${occPercent}% Full (${venue.currentOccupancy}/${venue.capacity})
+                            </span>
+                        </div>
+                        <div>
+                            <div class="venue-node-name">${venue.name}</div>
+                            <div class="venue-node-meta">Floor ${venue.floor} • ${venue.zone}</div>
+                            ${isLive ? `
+                                <div style="margin-top: 8px; font-size: 0.72rem; color: #f87171; font-weight: 700; display: flex; align-items: center; gap: 4px;">
+                                    🔴 LIVE: ${venue.liveEvent}
+                                </div>
+                            ` : `
+                                <div style="margin-top: 8px; font-size: 0.72rem; color: #6ee7b7;">
+                                    🟢 Available for Booking
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectVenue(id) {
+            selectedVenueId = id;
+            const venues = Store.getCampusVenues();
+            const venue = venues.find(v => v.id === id);
+            if (!venue) return;
+
+            // Highlight active node in grid
+            document.querySelectorAll('.map-venue-node').forEach(node => {
+                node.classList.remove('active');
+            });
+            const activeEl = document.getElementById(`node-${id}`);
+            if (activeEl) activeEl.classList.add('active');
+
+            // Render Drawer
+            const drawer = document.getElementById('venueDetailDrawer');
+            const content = document.getElementById('venueDrawerContent');
+            if (!drawer || !content) return;
+
+            drawer.style.display = 'flex';
+            const occPercent = Math.round((venue.currentOccupancy / venue.capacity) * 100);
+
+            content.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.8rem;">${venue.icon}</span>
+                            <div>
+                                <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--text-main);">${venue.name}</h2>
+                                <p style="font-size: 0.82rem; color: var(--text-muted);">${venue.zone} • Level ${venue.floor}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="startPathfinding('${venue.name}')" class="btn btn-secondary btn-sm">
+                            🧭 Walking Directions
+                        </button>
+                        ${venue.liveEvent ? `
+                            <a href="live_hub.html" class="btn btn-danger btn-sm">
+                                🔴 Enter Live Hub Stage
+                            </a>
+                        ` : `
+                            <a href="new_event.html" class="btn btn-primary btn-sm">
+                                💡 Pitch Event at this Venue
+                            </a>
+                        `}
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+                    <!-- Left: Occupancy & Status -->
+                    <div style="background: #f8fafc; border-radius: var(--radius-md); padding: 16px; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">
+                            IoT Real-Time Headcount
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+                            <span style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">${venue.currentOccupancy}</span>
+                            <span style="font-size: 0.85rem; color: var(--text-muted);">Max: ${venue.capacity} seats</span>
+                        </div>
+                        <div class="progress-track" style="height: 8px;">
+                            <div class="progress-bar-fill" style="width: ${occPercent}%; background: ${occPercent > 80 ? '#ef4444' : '#10b981'};"></div>
+                        </div>
+                        <div style="font-size: 0.74rem; color: var(--text-light); margin-top: 8px;">
+                            ${occPercent}% current occupancy sensor load
+                        </div>
+                    </div>
+
+                    <!-- Right: Venue Hardware Amenities -->
+                    <div style="background: #f8fafc; border-radius: var(--radius-md); padding: 16px; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;">
+                            Equipped Tech & Facilities
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            ${venue.amenities.map(a => `
+                                <span style="background: #ffffff; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: var(--radius-full); font-size: 0.78rem; font-weight: 600; color: #334155;">
+                                    ✓ ${a}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Pathfinding Simulation Container -->
+                <div id="pathfindingBox" style="display: none; margin-top: 18px; padding: 16px; background: #eff6ff; border: 1.5px dashed #3b82f6; border-radius: var(--radius-md);">
+                    <div style="font-weight: 700; color: #1e40af; font-size: 0.9rem; margin-bottom: 6px;">
+                        🧭 Turn-by-Turn Wayfinding to ${venue.name}
+                    </div>
+                    <ol style="margin-left: 20px; font-size: 0.84rem; color: #1e3a8a; line-height: 1.6;">
+                        <li>Start from <strong>Central Student Union Plaza</strong>.</li>
+                        <li>Proceed 40 meters North toward the Innovation Concourse.</li>
+                        <li>Take the elevator or glass staircase to <strong>Floor ${venue.floor}</strong>.</li>
+                        <li>Follow blue digital floor beacons to <strong>${venue.name} (${venue.zone})</strong>.</li>
+                    </ol>
+                    <div style="margin-top: 10px; font-size: 0.75rem; color: #2563eb; font-weight: 600;">
+                        Estimated walking time: 2 mins • Step count: ~180 steps
+                    </div>
+                </div>
+            `;
+        }
+
+        function startPathfinding(venueName) {
+            const box = document.getElementById('pathfindingBox');
+            if (box) {
+                box.style.display = 'block';
+                box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                Store.showToast(`Wayfinding route plotted to ${venueName}!`, 'info');
+            }
+        }
+    </script>
+</body>
+</html>

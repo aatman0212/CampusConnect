@@ -1238,3 +1238,661 @@ input, select, textarea {
     padding: 20px 16px;
   }
 }
+
+/* ==========================================================
+   Flagship Differentiators: Live Badges, CampusBot & Maps
+   ========================================================== */
+
+/* Live Pulsing Badge in Sidebar & Headers */
+.nav-badge.live-pulsing {
+  background: #ef4444;
+  color: #ffffff;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.7);
+  animation: liveBadgePulse 1.6s infinite ease-in-out;
+}
+
+@keyframes liveBadgePulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  50% { transform: scale(1.05); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* ==========================================================
+   Omnipresent CampusBot Floating AI Concierge
+   ========================================================== */
+.campus-bot-container {
+  position: fixed;
+  bottom: 24px;
+  right: 28px;
+  z-index: 9990;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.campus-bot-orb {
+  width: 58px;
+  height: 58px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.45);
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.campus-bot-orb:hover {
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.6);
+}
+
+.pulse-ring {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border-radius: var(--radius-full);
+  border: 2px solid #8b5cf6;
+  animation: orbPulse 2s infinite cubic-bezier(0.25, 1, 0.5, 1);
+  pointer-events: none;
+}
+
+@keyframes orbPulse {
+  0% { transform: scale(0.95); opacity: 0.9; }
+  100% { transform: scale(1.45); opacity: 0; }
+}
+
+.campus-bot-window {
+  display: none;
+  width: 360px;
+  height: 500px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px -8px rgba(15, 23, 42, 0.25);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  flex-direction: column;
+  overflow: hidden;
+  margin-bottom: 14px;
+  animation: botWindowSlide 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.campus-bot-window.active {
+  display: flex;
+}
+
+@keyframes botWindowSlide {
+  from { opacity: 0; transform: translateY(16px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.campus-bot-header {
+  background: linear-gradient(135deg, #1e1b4b 0%, #2563eb 100%);
+  color: #ffffff;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.campus-bot-messages {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background-color: #f8fafc;
+}
+
+.bot-msg-bubble {
+  background: #ffffff;
+  color: var(--text-main);
+  padding: 10px 14px;
+  border-radius: 14px;
+  border-bottom-left-radius: 2px;
+  box-shadow: var(--shadow-sm);
+  font-size: 0.86rem;
+  line-height: 1.45;
+  border: 1px solid #e2e8f0;
+  max-width: 90%;
+}
+
+.user-msg-bubble {
+  align-self: flex-end;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #ffffff;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border-bottom-right-radius: 2px;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+  max-width: 85%;
+}
+
+.bot-action-link {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 5px 12px;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.bot-action-link:hover {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.campus-bot-quick-prompts {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  background-color: #ffffff;
+  border-top: 1px solid #f1f5f9;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.campus-bot-quick-prompts::-webkit-scrollbar {
+  display: none;
+}
+
+.campus-bot-quick-prompts button {
+  white-space: nowrap;
+  font-size: 0.74rem;
+  background: #f1f5f9;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  color: #475569;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.campus-bot-quick-prompts button:hover {
+  background: #e2e8f0;
+  color: var(--primary);
+}
+
+.campus-bot-input-row {
+  display: flex;
+  padding: 10px 14px;
+  background: #ffffff;
+  border-top: 1px solid var(--border-color);
+  gap: 8px;
+}
+
+.campus-bot-input-row input {
+  flex: 1;
+  padding: 9px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  outline: none;
+}
+
+.campus-bot-input-row input:focus {
+  border-color: var(--primary);
+}
+
+.campus-bot-input-row button {
+  background: var(--primary);
+  color: #ffffff;
+  border-radius: var(--radius-md);
+  padding: 0 14px;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.campus-bot-input-row button:hover {
+  background: var(--primary-hover);
+}
+
+/* ==========================================================
+   Campus Spatial Map & Venue Floor Plan Navigator
+   ========================================================== */
+.campus-map-wrapper {
+  background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #0f172a 100%);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 480px;
+}
+
+.campus-map-grid-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+.campus-map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  margin-bottom: 24px;
+}
+
+.map-status-live {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fca5a5;
+}
+
+.map-canvas-container {
+  position: relative;
+  height: 440px;
+  width: 100%;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.map-venue-node {
+  background: rgba(30, 41, 59, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+.map-venue-node:hover, .map-venue-node.active {
+  transform: translateY(-4px) scale(1.02);
+  border-color: #38bdf8;
+  background: rgba(30, 41, 59, 0.95);
+  box-shadow: 0 10px 25px rgba(56, 189, 248, 0.25);
+}
+
+.map-venue-node.live-active {
+  border-color: #ef4444;
+  box-shadow: 0 0 18px rgba(239, 68, 68, 0.35);
+}
+
+.map-venue-node.live-active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: #ef4444;
+}
+
+.venue-node-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.venue-icon-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.venue-node-name {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-top: 10px;
+  color: #ffffff;
+}
+
+.venue-node-meta {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.venue-occupancy-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.venue-occupancy-pill.high { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+.venue-occupancy-pill.medium { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+.venue-occupancy-pill.low { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+
+.venue-drawer-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  padding: 24px;
+  margin-top: 24px;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+/* ==========================================================
+   Live Hub & Second Screen Stage UI
+   ========================================================== */
+.live-stage-hero {
+  background: linear-gradient(135deg, #09090b 0%, #1e1b4b 50%, #31104b 100%);
+  border-radius: var(--radius-lg);
+  padding: 36px;
+  color: #ffffff;
+  margin-bottom: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.live-countdown-grid {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.live-timer-unit {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-md);
+  padding: 12px 18px;
+  text-align: center;
+  min-width: 80px;
+}
+
+.live-timer-num {
+  font-size: 2.2rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #38bdf8;
+  line-height: 1;
+}
+
+.live-timer-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  color: #94a3b8;
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+}
+
+.live-hub-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+@media (max-width: 900px) {
+  .live-hub-columns {
+    grid-template-columns: 1fr;
+  }
+  .map-canvas-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    height: auto;
+  }
+}
+
+.live-panel-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.live-qa-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  margin-bottom: 12px;
+  transition: var(--transition);
+}
+
+.live-qa-item:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.qa-upvote-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.qa-upvote-btn:hover {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.project-vote-card {
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.secret-poap-box {
+  background: linear-gradient(135deg, #312e81, #4c1d95);
+  color: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-top: 24px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* ==========================================================
+   AI Synergy Radar & Teammate Engine (find_group.html)
+   ========================================================== */
+.synergy-radar-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+}
+
+.synergy-radar-container {
+  background: #f8fafc;
+  border-radius: var(--radius-md);
+  border: 1px solid #e2e8f0;
+  padding: 14px;
+  margin: 12px 0;
+}
+
+.radar-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  margin-bottom: 6px;
+}
+
+.radar-stat-track {
+  width: 120px;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.radar-stat-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  border-radius: 99px;
+}
+
+/* ==========================================================
+   Holographic 3D Interactive Credential Badge (profile.html)
+   ========================================================== */
+.holo-stage {
+  perspective: 1000px;
+  margin: 20px auto;
+  width: 320px;
+  height: 420px;
+}
+
+.holographic-badge {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #31104b 100%);
+  position: relative;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(99, 102, 241, 0.3);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #ffffff;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease-out, box-shadow 0.2s ease;
+  overflow: hidden;
+}
+
+.holographic-badge::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(115deg, 
+    transparent 20%, 
+    rgba(255, 255, 255, 0.12) 40%, 
+    rgba(56, 189, 248, 0.3) 50%, 
+    rgba(236, 72, 153, 0.3) 60%, 
+    transparent 80%
+  );
+  transform: rotate(30deg);
+  pointer-events: none;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.holographic-badge:hover::before {
+  opacity: 1;
+}
+
+.holo-watermark {
+  position: absolute;
+  right: -20px;
+  bottom: -20px;
+  font-size: 140px;
+  opacity: 0.08;
+  font-weight: 900;
+  pointer-events: none;
+}
+
+.holo-chip {
+  width: 44px;
+  height: 32px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.holo-hash {
+  font-family: monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: #94a3b8;
+}
+
+/* ==========================================================
+   Academic Clash Warning & AI Co-Pilot (new_event.html)
+   ========================================================== */
+.clash-radar-alert {
+  background: #fef2f2;
+  border: 1.5px solid #ef4444;
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  color: #991b1b;
+  margin-top: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  animation: modalFadeIn 0.25s ease-out;
+}
+
+.ai-copilot-card {
+  background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+  border: 1.5px dashed #8b5cf6;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
